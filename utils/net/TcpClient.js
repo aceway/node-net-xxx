@@ -14,8 +14,8 @@ var util = require('util');
 var net = require('net');
 var async = require('async');
 
-var Queue = require("../../_libs_server/common/utils/Queue.js");
-var byteUtils = require("../../_libs_server/common/utils/ByteUtils.js");
+var Queue = require("../Queue.js");
+var byteUtils = require("../ByteUtils.js");
 var logger= require("../logger.js");
 
 var TcpClient = function(host, port, headlen, rcvCallback){
