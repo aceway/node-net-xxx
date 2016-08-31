@@ -1,0 +1,99 @@
+{
+    "appenders": [
+        {
+            "type": "console", 
+            "category": "console"
+        },
+        {
+            "type" : "dateFile",
+            "category": "logTrace",
+			"layout": {
+				"type": "pattern",
+				"pattern": "[%r]-%m"
+			},
+            "pattern": "yyyy-MM-dd/hh_trace.log",
+            "filename" : "./logs/",
+            "absolute" : true,
+            "alwaysIncludePattern": true,
+            "maxLogSize":1
+        },
+        {
+            "type" : "dateFile",
+            "category": "logDebug",
+			"layout": {
+				"type": "pattern",
+				"pattern": "[%r]-%m"
+			},
+            "pattern": "yyyy-MM-dd/hh_debug.log",
+            "filename" : "./logs/",
+            "absolute" : true,
+            "alwaysIncludePattern": true
+        },
+        {
+            "type" : "dateFile",
+            "category": "logInfo",
+			"layout": {
+				"type": "pattern",
+				"pattern": "[%r]-%m"
+			},
+            "pattern": "yyyy-MM-dd/hh_info.log",
+            "filename" : "./logs/",
+            "absolute" : true,
+            "alwaysIncludePattern": true
+        },
+        {
+            "type" : "dateFile",
+            "category": "logWarn",
+			"layout": {
+				"type": "pattern",
+				"pattern": "[%r]-%m"
+			},
+            "pattern": "yyyy-MM-dd/hh_warn.log",
+            "filename" : "./logs/",
+            "absolute" : true,
+            "alwaysIncludePattern": true
+        },
+        {
+            "type" : "dateFile",
+            "category": "logError",
+			"layout": {
+				"type": "pattern",
+				"pattern": "[%r]-%m"
+			},
+            "pattern": "yyyy-MM-dd/hh_error.log",
+            "filename" : "./logs/",
+            "absolute" : true,
+            "alwaysIncludePattern": true
+        },
+        {
+            "type" : "dateFile",
+            "category": "logFatal",
+			"layout": {
+				"type": "pattern",
+				"pattern": "[%r]-%m"
+			},
+            "pattern": "yyyy-MM-dd/hh_fatal.log",
+            "filename" : "./logs/",
+            "absolute" : true,
+            "alwaysIncludePattern": true
+        },
+        {
+            "type" : "dateFile",
+            "category": "logAll",
+			"layout": {
+				"type": "pattern",
+				"pattern": "[%r][%[%5.5p%]]-%m"
+			},
+            "pattern": "yyyy-MM-dd/hh_all.log",
+            "filename" : "./logs/",
+            "absolute" : true,
+            "alwaysIncludePattern": true,
+            "maxLogSize":1
+        }
+    ],
+    "replaceConsole": true,
+    "allInOne": true,
+    "levels":{
+        "[all]":"TRACE"
+    }
+}

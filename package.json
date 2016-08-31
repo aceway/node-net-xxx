@@ -1,0 +1,22 @@
+{
+  "name": "node-net-xxx",
+  "version": "0.0.1",
+  "description": "a net server node unit, can use it to make large net server.",
+  "main": "app.js",
+  "dependencies": {
+    "colors": "^1.1.2",
+    "log4js": "^0.6.38"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "net",
+    "server",
+    "node",
+    "unit"
+  ],
+  "author": "aceway@qq.com",
+  "license": "MIT"
+}
