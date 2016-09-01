@@ -11,19 +11,38 @@ var XXX = function(bindCfg) {
 };
 
 XXX.prototype.start = function(callback){
-  logger.trace("start( ...)");
 	var self = this;
-	async.parallel({
-		input: function(cb) {
-			self.startListen4Input(cb);
+	self.open_input_output(callback);
+};
+
+XXX.prototype.open_input_output = function(callback){
+  logger.trace("open_input_output( ...)");
+	var self = this;
+
+	async.series({
+		input: function(cb_outer) {
+			self.startListen4Input(cb_outer);
 		},
-		output_here: function(cb) {
-			self.startListen4OutputHere(cb);
-		},
-		output_there: function(cb) {
-			self.startConnect4OutputThere(cb);
+		output: function(cb_outer){
+			async.parallel({
+				output_here: function(cb_inner) {
+					self.startListen4OutputHere(cb_inner);
+				},
+				output_there: function(cb_inner) {
+					self.startConnect4OutputThere(cb_inner);
+				}
+			}, function(e, r) {
+				if (!e && r && (r.outputer_here || r.output_there) ){
+					logger.info("Outputs ok: " + JSON.stringify(r) );
+					cb_outer(null, true);
+				}
+				else{
+					logger.error("Outputs failed: " + JSON.stringify(r) );
+					cb_outer(-1, r);
+				}
+			});
 		}
-	}, function(err, results) {
+	}, function(err, results){
 		callback(err, results);
 	});
 };
@@ -41,12 +60,6 @@ XXX.prototype.startListen4Input = function(callback){
 	});
 };
 
-XXX.prototype.startOneInput = function(schema, input, callback) {
-  logger.trace("startOneInput(...) => " + input);
-	var self = this;
-	callback(null, true);
-};
-
 XXX.prototype.startListen4OutputHere = function( callback ){
   logger.trace("startListen4OutputHere(...)");
 	var self = this;
@@ -61,12 +74,6 @@ XXX.prototype.startListen4OutputHere = function( callback ){
 	});
 };
 
-XXX.prototype.startGroupOutputHere = function(schema, outputs, callback) {
-  logger.trace("startGroupOutputHere(...) => " + outputs);
-	var self = this;
-	callback(null, true);
-};
-
 XXX.prototype.startConnect4OutputThere = function( callback ){
   logger.trace("startConnect4OutputThere(...)");
 	var self = this;
@@ -79,6 +86,18 @@ XXX.prototype.startConnect4OutputThere = function( callback ){
 	  function(err, results) {
 			callback(err, results);
 	});
+};
+
+XXX.prototype.startOneInput = function(schema, input, callback) {
+  logger.trace("startOneInput(...) => " + input);
+	var self = this;
+	callback(null, true);
+};
+
+XXX.prototype.startGroupOutputHere = function(schema, outputs, callback) {
+  logger.trace("startGroupOutputHere(...) => " + outputs);
+	var self = this;
+	callback(null, true);
 };
 
 XXX.prototype.startGroupOutputThere = function(schema, outputs, callback) {
