@@ -1,5 +1,5 @@
 'user strict'
-var logger = require('./utils/logger.js');
+var logger = require('./logger.js');
 
 var Binder = function(cfgJson){
 	logger.trace(cfgJson);
@@ -12,5 +12,5 @@ Binder.prototype.checkConfig = function () {
 	logger.trace("CHECK BINDER CONFIG DATA.");
 };
 
-var binder = new Binder('./config/bind.json');
+var binder = new Binder('../config/bind.json');
 module.exports = binder;
