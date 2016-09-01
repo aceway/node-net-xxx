@@ -41,6 +41,9 @@ XXX.prototype.open_input_output = function(callback){
 					cb_outer(-1, r);
 				}
 			});
+		},
+		monitor: function(cb_outer){
+			self.startListen4Monitor(cb_outer);
 		}
 	}, function(err, results){
 		callback(err, results);
@@ -50,10 +53,23 @@ XXX.prototype.open_input_output = function(callback){
 XXX.prototype.startListen4Input = function(callback){
   logger.trace("startListen4Input(...)");
 	var self = this;
-	async.every( Object.keys(self.binder.input),
+	async.every( Object.keys(self.binder.cfg.input),
 	  function(key, cb) {
 			logger.debug("INPUT: " + key);
-			self.startOneInput(key, self.binder.input[key], cb);
+			self.startOneInput(key, self.binder.cfg.input[key], cb);
+		},
+	  function(err, results) {
+			callback(err, results);
+	});
+};
+
+XXX.prototype.startListen4Monitor = function(callback){
+  logger.trace("startListen4Monitor(...)");
+	var self = this;
+	async.every( Object.keys(self.binder.cfg.monitor),
+	  function(key, cb) {
+			logger.debug("MONITOR: " + key);
+			self.startOneMonitor(key, self.binder.cfg.monitor[key], cb);
 		},
 	  function(err, results) {
 			callback(err, results);
@@ -63,10 +79,10 @@ XXX.prototype.startListen4Input = function(callback){
 XXX.prototype.startListen4OutputHere = function( callback ){
   logger.trace("startListen4OutputHere(...)");
 	var self = this;
-	async.every( Object.keys(self.binder.output_here),
+	async.every( Object.keys(self.binder.cfg.output_here),
 	  function(key, cb) {
 			logger.debug("OUTPUT here: " + key);
-			self.startGroupOutputHere(key, self.binder.output_here[key],
+			self.startGroupOutputHere(key, self.binder.cfg.output_here[key],
 																cb);
 		},
 	  function(err, results) {
@@ -77,10 +93,10 @@ XXX.prototype.startListen4OutputHere = function( callback ){
 XXX.prototype.startConnect4OutputThere = function( callback ){
   logger.trace("startConnect4OutputThere(...)");
 	var self = this;
-	async.every( Object.keys(self.binder.output_there),
+	async.every( Object.keys(self.binder.cfg.output_there),
 	  function(key, cb) {
 			logger.debug("OUTPUT there: " + key);
-			self.startGroupOutputThere(key, self.binder.output_there[key],
+			self.startGroupOutputThere(key, self.binder.cfg.output_there[key],
 																cb);
 		},
 	  function(err, results) {
@@ -90,6 +106,12 @@ XXX.prototype.startConnect4OutputThere = function( callback ){
 
 XXX.prototype.startOneInput = function(schema, input, callback) {
   logger.trace("startOneInput(...) => " + input);
+	var self = this;
+	callback(null, true);
+};
+
+XXX.prototype.startOneMonitor = function(schema, monitor, callback) {
+  logger.trace("startOneMonitor(...) => " + monitor);
 	var self = this;
 	callback(null, true);
 };

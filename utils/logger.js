@@ -22,38 +22,54 @@ Date.prototype.format = function(fmt){
   for(var k in o)
     if(new RegExp("("+ k +")").test(fmt))
       fmt = fmt.replace(RegExp.$1, RegExp.$1.length==1 ? 
-				o[k] : ("00"+ o[k]).substr((""+ o[k]).length));
+											  o[k] : ("00"+ o[k]).substr((""+ o[k]).length));
   return fmt;
 }
 
 var Logger = function(optionsConfig) {
 	this.prepare_();
-	this.opt = require(optionsConfig);
+	this.option = require(optionsConfig);
 	this.init();
 };
 
 Logger.prototype.prepare_ = function() {
 	var tmObj = new Date();
   var dirPath = process.cwd() + "/logs/";
-  if(!fs.existsSync(dirPath)){
+  if( !fs.existsSync(dirPath) ){
 		// log4js 里配置的 pattern 和 filename 是否需要动态调整 ? 待测
+		//console.log("Make the new dir:".red + dirPath);
     fs.mkdirSync(dirPath);
   	dirPath = process.cwd() + "/logs/" + tmObj.format("yyyy-MM-dd");
-  	if(!fs.existsSync(dirPath)){
+  	if( !fs.existsSync(dirPath) ){
+			//console.log("Make the new dir:".red + dirPath);
   	  fs.mkdirSync(dirPath);
   	}
+		else{
+			//console.log("The dir has exist:".green + dirPath);
+		}
   }
+	else{
+		//console.log("The dir has exist:".green + dirPath);
+  	dirPath = process.cwd() + "/logs/" + tmObj.format("yyyy-MM-dd");
+  	if( !fs.existsSync(dirPath) ){
+			//console.log("Make the new dir:".red + dirPath);
+  	  fs.mkdirSync(dirPath);
+  	}
+		else{
+			//console.log("The dir has exist:".green + dirPath);
+		}
+	}
 }
 
 Logger.prototype.init = function () {
 	var self = this;
-  log4js.configure(self.opt);
+  log4js.configure(self.option);
 
   // 终端调试输出
   self.logConsole = log4js.getLogger('console');
 
   // 所有到文件的日志汇总在一个文件里，便于调试
-  if ( self.opt.allInOne === true ){
+  if ( self.option.allInOne === true ){
       self.logAll_ = log4js.getLogger('logAll');
   }
 
@@ -84,22 +100,10 @@ Logger.prototype.console = function (msg) {
   self.logConsole.trace(msg);
 }
 
-Logger.prototype.all_ = function (msg) {
-	var self = this;
-  if ( self.opt.allInOne === true ){
-    if (typeof self.logAll_ === 'undefined') {
-      return ;
-    }
-    self.logAll_.trace(msg);
-  }
-}
-
 Logger.prototype.trace = function (msg) {
 	var self = this;
   self.logConsole.trace(msg);
-  if ( self.opt.allInOne === true ){
-    self.logAll_.trace(msg);
-  }
+  self.logAll_.trace(msg);
 
   if (typeof self.logTrace === 'undefined') {
     return ;
@@ -110,9 +114,7 @@ Logger.prototype.trace = function (msg) {
 Logger.prototype.debug = function (msg) {
 	var self = this;
   self.logConsole.debug(msg);
-  if ( self.opt.allInOne === true ){
-    self.logAll_.debug(msg);
-  }
+  self.logAll_.debug(msg);
 
   if (typeof self.logDebug === 'undefined') {
     return ; 
@@ -123,9 +125,7 @@ Logger.prototype.debug = function (msg) {
 Logger.prototype.info = function (msg) {
 	var self = this;
   self.logConsole.info(msg);
-  if ( self.opt.allInOne === true ){
-    self.logAll_.info(msg);
-  }
+  self.logAll_.info(msg);
 
   if (typeof self.logInfo === 'undefined') {
     return ;
@@ -136,9 +136,7 @@ Logger.prototype.info = function (msg) {
 Logger.prototype.warn = function (msg) {
 	var self = this;
   self.logConsole.warn(msg);
-  if ( self.opt.allInOne === true ){
-    self.logAll_.warn(msg);
-  }
+  self.logAll_.warn(msg);
 
   if (typeof self.logWarn === 'undefined') {
     return ;
@@ -149,9 +147,7 @@ Logger.prototype.warn = function (msg) {
 Logger.prototype.error = function (msg) {
 	var self = this;
   self.logConsole.error(msg);
-  if ( self.opt.allInOne === true ){
-    self.logAll_.error(msg);
-  }
+  self.logAll_.error(msg);
 
   if (typeof self.logError === 'undefined') {
     return ;
@@ -162,9 +158,7 @@ Logger.prototype.error = function (msg) {
 Logger.prototype.fatal = function (msg) {
 	var self = this;
   self.logConsole.fatal(msg);
-  if ( self.opt.allInOne === true ){
-    self.logAll_.fatal(msg);
-  }
+  self.logAll_.fatal(msg);
 
   if (typeof self.logFatal === 'undefined') {
     return ;

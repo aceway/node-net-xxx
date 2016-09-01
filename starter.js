@@ -2,7 +2,7 @@
 var logger = require('./utils/logger.js');
 var xxx = require('./xxx.js');
 
-var x = new xxx('./config/bind.json');
+var x = new xxx('./binder.js');
 x.start(function(e, r){
 	logger.trace(r);
 });
