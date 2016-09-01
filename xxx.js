@@ -2,16 +2,17 @@
 var async = require('async');
 var logger = require('./utils/logger.js');
 
-var inputer = require('./parts/inputer.js');
+var inputter = require('./parts/inputter.js');
 var outputer = require('./parts/outputer.js');
 var monitor = require('./parts/monitor.js');
 
 var XXX = function(bindCfg) {
   logger.trace("XXX(" + bindCfg+")");
 	this.binder = require(bindCfg);
-	this.inputer = {};
+	this.inputter = {};
 	this.outputer_here = {};
 	this.outputer_there = {};
+	this.monitor = {};
 };
 
 XXX.prototype.start = function(callback){
