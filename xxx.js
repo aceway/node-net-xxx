@@ -1,6 +1,10 @@
 'use strict';
-var logger = require('./utils/logger.js');
 var async = require('async');
+var logger = require('./utils/logger.js');
+
+var inputer = require('./parts/inputer.js');
+var outputer = require('./parts/outputer.js');
+var monitor = require('./parts/monitor.js');
 
 var XXX = function(bindCfg) {
   logger.trace("XXX(" + bindCfg+")");
