@@ -2,7 +2,11 @@
     "appenders": [
         {
             "type": "console", 
-            "category": "console"
+            "category": "console",
+			"layout": {
+				"type": "pattern",
+				"pattern": "[%r][%[%5.5p%]]-%m"
+			}
         },
         {
             "type" : "dateFile",

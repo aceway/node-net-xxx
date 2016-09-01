@@ -31,40 +31,60 @@ XXX.prototype.start = function(callback){
 XXX.prototype.startListen4Input = function(callback){
   logger.trace("startListen4Input(...)");
 	var self = this;
-	async.some( Object.keys(self.binder.input),
+	async.every( Object.keys(self.binder.input),
 	  function(key, cb) {
 			logger.debug("INPUT: " + key);
-			cb(null, null);
+			self.startOneInput(key, self.binder.input[key], cb);
 		},
 	  function(err, results) {
 			callback(err, results);
 	});
-}
+};
+
+XXX.prototype.startOneInput = function(schema, input, callback) {
+  logger.trace("startOneInput(...) => " + input);
+	var self = this;
+	callback(null, true);
+};
 
 XXX.prototype.startListen4OutputHere = function( callback ){
   logger.trace("startListen4OutputHere(...)");
 	var self = this;
-	async.some( Object.keys(self.binder.output_here),
+	async.every( Object.keys(self.binder.output_here),
 	  function(key, cb) {
 			logger.debug("OUTPUT here: " + key);
-			cb(null, null);
+			self.startGroupOutputHere(key, self.binder.output_here[key],
+																cb);
 		},
 	  function(err, results) {
 			callback(err, results);
 	});
-}
+};
+
+XXX.prototype.startGroupOutputHere = function(schema, outputs, callback) {
+  logger.trace("startGroupOutputHere(...) => " + outputs);
+	var self = this;
+	callback(null, true);
+};
 
 XXX.prototype.startConnect4OutputThere = function( callback ){
   logger.trace("startConnect4OutputThere(...)");
 	var self = this;
-	async.some( Object.keys(self.binder.output_there),
+	async.every( Object.keys(self.binder.output_there),
 	  function(key, cb) {
 			logger.debug("OUTPUT there: " + key);
-			cb(null, null);
+			self.startGroupOutputThere(key, self.binder.output_there[key],
+																cb);
 		},
 	  function(err, results) {
 			callback(err, results);
 	});
-}
+};
+
+XXX.prototype.startGroupOutputThere = function(schema, outputs, callback) {
+  logger.trace("startGroupOutputThere(...) => " + outputs);
+	var self = this;
+	callback(null, true);
+};
 
 module.exports = XXX;
