@@ -10,7 +10,7 @@ var Inputter = function(schema, host, port) {
 Inputter.prototype.start = function (callback) {
 	var self = this;
 	logger.info("Input listen on " + self.schema  + "://" + self.host + ":" + self.port);
-	callback(null, "OK");
+	callback(null, self.host +":"+ self.port);
 };
 
 module.exports = Inputter;

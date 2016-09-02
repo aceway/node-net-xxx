@@ -10,7 +10,7 @@ var Monitor = function(schema, host, port) {
 Monitor.prototype.start = function (callback) {
 	var self = this;
 	logger.info("Monitor listen on " + self.schema  + "://" + self.host + ":" + self.port);
-	callback(null, "OK");
+	callback(null, self.host +":"+ self.port);
 };
 
 module.exports = Monitor;

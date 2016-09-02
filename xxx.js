@@ -20,14 +20,15 @@ XXX.prototype.start = function(callback){
 	self.open_input_output(function(err, res){
 		if (!err && res && res.input === true && 
 				res.output === true && res.monitor === true){
-			callback(err, "START OK");
+			callback(null, res);
 		}
 		else{
-			callback(err, "START FAILED");
+			callback(-1, res);
 		}
 	});
 };
 
+// input, output and monitor must be all ok, then OK
 XXX.prototype.open_input_output = function(callback){
   logger.trace("open_input_output( ...)");
 	var self = this;
@@ -64,57 +65,125 @@ XXX.prototype.open_input_output = function(callback){
 	});
 };
 
+// any only of input ok, then start listen OK
 XXX.prototype.startListen4Input = function(callback){
   logger.trace("startListen4Input(...)");
 	var self = this;
-	async.every( Object.keys(self.binder.cfg.input),
+	var input_ok = false;
+	async.each( Object.keys(self.binder.cfg.input),
 	  function(key, cb) {
-			//logger.debug("INPUT: " + key);
-			self.startOneInput(key, self.binder.cfg.input[key], cb);
+			self.startOneInput(key, self.binder.cfg.input[key], function(e, r){
+				if ( !e ){
+					input_ok = true;
+				}
+				else{
+					logger.warn("Listen on input: " + key + " " + r + " failed.");
+				}
+				cb(null);
+			});
 		},
-	  function(err, results) {
-			callback(err, results);
+	  function(err) {
+			if ( input_ok ){
+				logger.info("Listen for input OK");
+				callback(null, true);
+			}
+			else{
+				logger.info("Listen for input FAILED");
+				callback(-1, false);
+			}
 	});
 };
 
+// any only of monitor ok, then start listen OK
 XXX.prototype.startListen4Monitor = function(callback){
   logger.trace("startListen4Monitor(...)");
 	var self = this;
-	async.every( Object.keys(self.binder.cfg.monitor),
+	var monitor_ok = false;
+	async.each( Object.keys(self.binder.cfg.monitor),
 	  function(key, cb) {
-			//logger.debug("MONITOR: " + key);
-			self.startOneMonitor(key, self.binder.cfg.monitor[key], cb);
+			self.startOneMonitor(key, self.binder.cfg.monitor[key], function(e, r){
+				if ( ! e ){
+					monitor_ok = true;
+				}
+				else{
+					logger.warn("Listen on monitor: " + key + " " + r + " failed.");
+				}
+				cb(null);
+			});
 		},
-	  function(err, results) {
-			callback(err, results);
+	  function(err) {
+			if ( monitor_ok ){
+				logger.info("Listen for monitor OK");
+				callback(null, true);
+			}
+			else{
+				logger.info("Listen for monitor FAILED");
+				callback(-1, false);
+			}
 	});
 };
 
+// any only of output here ok, then start listen OK
 XXX.prototype.startListen4OutputHere = function( callback ){
   logger.trace("startListen4OutputHere(...)");
 	var self = this;
+	var output_here = false;
 	async.each( Object.keys(self.binder.cfg.output_here),
 	  function(key, cb) {
 			//logger.debug("OUTPUT here: " + key);
-			self.startGroupOutputHere(key, self.binder.cfg.output_here[key],
-																cb);
+			self.startGroupOutputHere(key, 
+																self.binder.cfg.output_here[key], 
+																function(e, r){
+				if ( ! e ){
+					output_here = true;
+				}
+				else{
+					logger.warn("Listen on output_here: " + key + " " + r + " failed.");
+				}
+				cb(null);
+			});
 		},
 	  function(err, results) {
-			callback(err, !!!err);
+			if ( output_here ){
+				logger.info("Listen for output_here OK");
+				callback(null, true);
+			}
+			else{
+				logger.info("Listen for output_here FAILED");
+				callback(-1, false);
+			}
 	});
 };
 
+// any only of output There ok, then start listen OK
 XXX.prototype.startConnect4OutputThere = function( callback ){
   logger.trace("startConnect4OutputThere(...)");
 	var self = this;
+	var output_there = false;
 	async.each( Object.keys(self.binder.cfg.output_there),
 	  function(key, cb) {
 			//logger.debug("OUTPUT there: " + key);
-			self.startGroupOutputThere(key, self.binder.cfg.output_there[key],
-																cb);
+			self.startGroupOutputThere(key, 
+																self.binder.cfg.output_there[key],
+																function(e, r){
+				if ( ! e ){
+					output_there = true;
+				}
+				else{
+					logger.warn("Listen on output_There: " + key + " " + r + " failed.");
+				}
+				cb(null);
+			});
 		},
 	  function(err, results) {
-			callback(err, !!!err);
+			if ( output_there ){
+				logger.info("Listen for output_There OK");
+				callback(null, true);
+			}
+			else{
+				logger.info("Listen for output_There FAILED");
+				callback(-1, false);
+			}
 	});
 };
 

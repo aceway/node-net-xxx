@@ -19,7 +19,7 @@ Outputter.prototype.start = function (callback) {
 	}
 
 	logger.info("Output " + mode_tips + self.schema  + "://" + self.host + ":" + self.port);
-	callback(null, "OK");
+	callback(null, self.host +":"+ self.port+":" + self.mode);
 };
 
 module.exports = Outputter;
