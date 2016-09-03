@@ -13,13 +13,13 @@ Outputter.prototype.start = function (callback) {
 	var mode_tips = "";
 	if (self.mode === "LISTEN"){
 		mode_tips = "listen on "
-		logger.info("Output " + mode_tips + self.schema  + "://" + self.host + 
+		logger.trace("Output " + mode_tips + self.schema  + "://" + self.host + 
 							":" + self.port);
 		self.startListen(callback);
 	}
 	else{
 		mode_tips = "connect to "
-		logger.info("Output " + mode_tips + self.schema  + "://" + self.host + 
+		logger.trace("Output " + mode_tips + self.schema  + "://" + self.host + 
 							":" + self.port);
 		self.startConnect(callback);
 	}
@@ -28,7 +28,7 @@ Outputter.prototype.start = function (callback) {
 
 Outputter.prototype.startListen = function( callback ) {
 	var self = this;
-	logger.info("Outputter listen on " + self.schema  + "://" + 
+	logger.trace("Outputter listen on " + self.schema  + "://" + 
 							self.host + ":" + self.port);
 	switch(self.schema){
 	case 'http':
@@ -56,7 +56,7 @@ Outputter.prototype.startListen = function( callback ) {
 
 Outputter.prototype.startConnect = function( callback ) {
 	var self = this;
-	logger.info("Outputter connect to " + self.schema  + "://" + 
+	logger.trace("Outputter connect to " + self.schema  + "://" + 
 							self.host + ":" + self.port);
 	switch(self.schema){
 	case 'http':

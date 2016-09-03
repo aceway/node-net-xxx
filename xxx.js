@@ -75,6 +75,7 @@ XXX.prototype.startListen4Input = function(callback){
 			self.startOneInput(key, self.binder.cfg.input[key], function(e, r){
 				if ( !e ){
 					input_ok = true;
+					logger.info("Listen on input: " + key + " " + r + " OK.");
 				}
 				else{
 					logger.warn("Listen on input: " + key + " " + r + " failed.");
@@ -88,7 +89,7 @@ XXX.prototype.startListen4Input = function(callback){
 				callback(null, true);
 			}
 			else{
-				logger.info("Listen for input FAILED");
+				logger.error("Listen for input FAILED");
 				callback(-1, false);
 			}
 	});
@@ -104,6 +105,7 @@ XXX.prototype.startListen4Monitor = function(callback){
 			self.startOneMonitor(key, self.binder.cfg.monitor[key], function(e, r){
 				if ( ! e ){
 					monitor_ok = true;
+					logger.info("Listen on monitor: " + key + " " + r + " OK.");
 				}
 				else{
 					logger.warn("Listen on monitor: " + key + " " + r + " failed.");
@@ -117,7 +119,7 @@ XXX.prototype.startListen4Monitor = function(callback){
 				callback(null, true);
 			}
 			else{
-				logger.info("Listen for monitor FAILED");
+				logger.error("Listen for monitor FAILED");
 				callback(-1, false);
 			}
 	});
@@ -136,6 +138,7 @@ XXX.prototype.startListen4OutputHere = function( callback ){
 																function(e, r){
 				if ( ! e ){
 					output_here = true;
+					logger.info("Listen on output_here: " + key + " " + r + " OK.");
 				}
 				else{
 					logger.warn("Listen on output_here: " + key + " " + r + " failed.");
@@ -149,7 +152,7 @@ XXX.prototype.startListen4OutputHere = function( callback ){
 				callback(null, true);
 			}
 			else{
-				logger.info("Listen for output_here FAILED");
+				logger.warn("Listen for output_here FAILED");
 				callback(-1, false);
 			}
 	});
@@ -168,9 +171,10 @@ XXX.prototype.startConnect4OutputThere = function( callback ){
 																function(e, r){
 				if ( ! e ){
 					output_there = true;
+					logger.info("Connect to output_There: " + key + " " + r + " OK.");
 				}
 				else{
-					logger.warn("Connect to output_There: " + key + " " + r + " failed.");
+					logger.warn("Connect to output_There: " +key+ " " +r+ " failed.");
 				}
 				cb(null);
 			});
@@ -181,7 +185,7 @@ XXX.prototype.startConnect4OutputThere = function( callback ){
 				callback(null, true);
 			}
 			else{
-				logger.info("Connect to output_There FAILED");
+				logger.warn("Connect to output_There FAILED");
 				callback(-1, false);
 			}
 	});
