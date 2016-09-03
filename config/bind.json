@@ -5,13 +5,13 @@
     "tcp" : "127.0.0.1:2012",
     "websocket": "127.0.0.1:8004"
   },
-  "output_here": {
+  "output_listen": {
     "http" : [ "self", "127.0.0.1:8001" ],
     "https" : [ "self", "127.0.0.1:8003" ],
     "tcp" : [ "self", "127.0.0.1:2013" ],
     "websocket": [ "127.0.0.1:8005" ]
   },
-  "output_there": {
+  "output_connect": {
     "http" : [ "self", "127.0.0.1:8001" ],
     "https" : [ "self", "127.0.0.1:8003" ],
     "tcp" : [ "self", "127.0.0.1:2013" ],

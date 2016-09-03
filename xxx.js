@@ -10,8 +10,8 @@ var XXX = function(bindCfg) {
   logger.trace("XXX(" + bindCfg+")");
 	this.binder = require(bindCfg);
 	this.inputter = {};
-	this.outputer_here = {};
-	this.outputer_there = {};
+	this.outputer_listen = {};
+	this.outputer_connect = {};
 	this.monitor = {};
 };
 
@@ -39,14 +39,14 @@ XXX.prototype.open_input_output = function(callback){
 		},
 		output: function(cb_outer){
 			async.parallel({
-				output_here: function(cb_inner) {
-					self.startListen4OutputHere(cb_inner);
+				output_listen: function(cb_inner) {
+					self.startListen4OutputListen(cb_inner);
 				},
-				output_there: function(cb_inner) {
-					self.startConnect4OutputThere(cb_inner);
+				output_connect: function(cb_inner) {
+					self.startConnect4OutputConnect(cb_inner);
 				}
 			}, function(e, r) {
-				if (!e && r && (r.outputer_here || r.output_there) ){
+				if (!e && r && (r.outputer_listen || r.output_connect) ){
 					logger.info("Outputs ok: " + JSON.stringify(r) );
 					cb_outer(null, true);
 				}
@@ -125,67 +125,67 @@ XXX.prototype.startListen4Monitor = function(callback){
 	});
 };
 
-// any only of output here ok, then start listen OK
-XXX.prototype.startListen4OutputHere = function( callback ){
-  logger.trace("startListen4OutputHere(...)");
+// any only of output listen ok, then start listen OK
+XXX.prototype.startListen4OutputListen = function( callback ){
+  logger.trace("startListen4OutputListen(...)");
 	var self = this;
-	var output_here = false;
-	async.each( Object.keys(self.binder.cfg.output_here),
+	var output_listen = false;
+	async.each( Object.keys(self.binder.cfg.output_listen),
 	  function(key, cb) {
-			//logger.debug("OUTPUT here: " + key);
-			self.startGroupOutputHere(key, 
-																self.binder.cfg.output_here[key], 
+			//logger.debug("OUTPUT listen: " + key);
+			self.startGroupOutputListen(key, 
+																self.binder.cfg.output_listen[key], 
 																function(e, r){
 				if ( ! e ){
-					output_here = true;
-					logger.info("Listen on output_here: " + key + " " + r + " OK.");
+					output_listen = true;
+					logger.info("Listen on output_listen: " + key + " " + r + " OK.");
 				}
 				else{
-					logger.warn("Listen on output_here: " + key + " " + r + " failed.");
+					logger.warn("Listen on output_listen: " + key + " " + r + " failed.");
 				}
 				cb(null);
 			});
 		},
 	  function(err, results) {
-			if ( output_here ){
-				logger.info("Listen for output_here OK");
+			if ( output_listen ){
+				logger.info("Listen for output_listen OK");
 				callback(null, true);
 			}
 			else{
-				logger.warn("Listen for output_here FAILED");
+				logger.warn("Listen for output_listen FAILED");
 				callback(-1, false);
 			}
 	});
 };
 
-// any only of output There ok, then start listen OK
-XXX.prototype.startConnect4OutputThere = function( callback ){
-  logger.trace("startConnect4OutputThere(...)");
+// any only of output Connect ok, then start listen OK
+XXX.prototype.startConnect4OutputConnect = function( callback ){
+  logger.trace("startConnect4OutputConnect(...)");
 	var self = this;
-	var output_there = false;
-	async.each( Object.keys(self.binder.cfg.output_there),
+	var output_connect = false;
+	async.each( Object.keys(self.binder.cfg.output_connect),
 	  function(key, cb) {
-			//logger.debug("OUTPUT there: " + key);
-			self.startGroupOutputThere(key, 
-																self.binder.cfg.output_there[key],
+			//logger.debug("OUTPUT connect: " + key);
+			self.startGroupOutputConnect(key, 
+																self.binder.cfg.output_connect[key],
 																function(e, r){
 				if ( ! e ){
-					output_there = true;
-					logger.info("Connect to output_There: " + key + " " + r + " OK.");
+					output_connect = true;
+					logger.info("Connect to output_Connect: " + key + " " + r + " OK.");
 				}
 				else{
-					logger.warn("Connect to output_There: " +key+ " " +r+ " failed.");
+					logger.warn("Connect to output_Connect: " +key+ " " +r+ " failed.");
 				}
 				cb(null);
 			});
 		},
 	  function(err, results) {
-			if ( output_there ){
-				logger.info("Connect to output_There OK");
+			if ( output_connect ){
+				logger.info("Connect to output_Connect OK");
 				callback(null, true);
 			}
 			else{
-				logger.warn("Connect to output_There FAILED");
+				logger.warn("Connect to output_Connect FAILED");
 				callback(-1, false);
 			}
 	});
@@ -217,8 +217,8 @@ XXX.prototype.startOneMonitor = function(schema, monitor, callback) {
 	});
 };
 
-XXX.prototype.startGroupOutputHere = function(schema, outputs, callback) {
-  //logger.trace("startGroupOutputHere(...) => " + outputs);
+XXX.prototype.startGroupOutputListen = function(schema, outputs, callback) {
+  //logger.trace("startGroupOutputListen(...) => " + outputs);
 	var self = this;
 	var one_ok = false;
 	async.each( outputs, function(output, cb){
@@ -227,7 +227,7 @@ XXX.prototype.startGroupOutputHere = function(schema, outputs, callback) {
 		var tpt = new Outputer(schema, info[0], info[1], "LISTEN");
 		tpt.start(function(e, r){
 			if ( ! e ){
-				self.outputer_here[output.trim()] = tpt;
+				self.outputer_listen[output.trim()] = tpt;
 				one_ok = true;
 			}
 			else{
@@ -236,16 +236,16 @@ XXX.prototype.startGroupOutputHere = function(schema, outputs, callback) {
 		});
 	}, function(err, result){
 		if ( one_ok === true ) {
-			callback(null, "Outputer there OK");
+			callback(null, "Outputer connect OK");
 		}
 		else {
-			callback(-1, "Outputer there FAILED");
+			callback(-1, "Outputer connect FAILED");
 		}
 	});
 };
 
-XXX.prototype.startGroupOutputThere = function(schema, outputs, callback) {
-  //logger.trace("startGroupOutputThere(...) => " + outputs);
+XXX.prototype.startGroupOutputConnect = function(schema, outputs, callback) {
+  //logger.trace("startGroupOutputConnect(...) => " + outputs);
 	var self = this;
 	var one_ok = false;
 	async.each( outputs, function(output, cb){
@@ -254,7 +254,7 @@ XXX.prototype.startGroupOutputThere = function(schema, outputs, callback) {
 		var tpt = new Outputer(schema, info[0], info[1], "CONNECT");
 		tpt.start(function(e, r){
 			if ( ! e ){
-				self.outputer_here[output.trim()] = tpt;
+				self.outputer_listen[output.trim()] = tpt;
 				one_ok = true;
 			}
 			else {
@@ -263,10 +263,10 @@ XXX.prototype.startGroupOutputThere = function(schema, outputs, callback) {
 		});
 	}, function(err, result){
 		if ( one_ok === true ) {
-			callback(null, "Outputer there OK.");
+			callback(null, "Outputer connect OK.");
 		}
 		else {
-			callback(-1, "Outputer there FAILED.");
+			callback(-1, "Outputer connect FAILED.");
 		}
 	});
 };
