@@ -1,17 +1,17 @@
 {
-  "input": {
+  "inputter": {
     "http" : "127.0.0.1:8000",
     "https" : "127.0.0.1:8002",
     "tcp" : "127.0.0.1:2012",
     "websocket": "127.0.0.1:8004"
   },
-  "output_listen": {
+  "outputter_listen": {
     "http" : [ "self", "127.0.0.1:8001" ],
     "https" : [ "self", "127.0.0.1:8003" ],
     "tcp" : [ "self", "127.0.0.1:2013" ],
     "websocket": [ "127.0.0.1:8005" ]
   },
-  "output_connect": {
+  "outputter_connect": {
     "http" : [ "self", "127.0.0.1:8001" ],
     "https" : [ "self", "127.0.0.1:8003" ],
     "tcp" : [ "self", "127.0.0.1:2013" ],

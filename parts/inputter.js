@@ -9,7 +9,7 @@ var Inputter = function(schema, host, port) {
 
 Inputter.prototype.start = function (callback) {
 	var self = this;
-	logger.trace("Input listen on " + self.schema  + "://" + 
+	logger.trace("Inputter listen on " + self.schema  + "://" + 
 							self.host + ":" + self.port);
 	switch(self.schema){
 	case 'http':

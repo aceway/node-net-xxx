@@ -12,9 +12,9 @@ Binder.prototype.checkConfig = function () {
 	logger.trace("CHECK BINDER CONFIG DATA.");
 };
 
-Binder.prototype.getSelfInput = function (schema) {
+Binder.prototype.getSelfInputter = function (schema) {
 	var self = this;
-	return self.cfg.input[schema]
+	return self.cfg.inputter[schema]
 };
 
 var binder = new Binder('../config/bind.json');

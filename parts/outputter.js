@@ -13,13 +13,13 @@ Outputter.prototype.start = function (callback) {
 	var mode_tips = "";
 	if (self.mode === "LISTEN"){
 		mode_tips = "listen on "
-		logger.trace("Output " + mode_tips + self.schema  + "://" + self.host + 
+		logger.trace("Outputter " + mode_tips + self.schema  + "://" + self.host + 
 							":" + self.port);
 		self.startListen(callback);
 	}
 	else{
 		mode_tips = "connect to "
-		logger.trace("Output " + mode_tips + self.schema  + "://" + self.host + 
+		logger.trace("Outputter " + mode_tips + self.schema  + "://" + self.host + 
 							":" + self.port);
 		self.startConnect(callback);
 	}
