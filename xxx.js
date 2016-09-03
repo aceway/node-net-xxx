@@ -3,15 +3,15 @@ var async = require('async');
 var logger = require('./utils/logger.js');
 
 var Inputter = require('./parts/inputter.js');
-var Outputer = require('./parts/outputer.js');
+var Outputter = require('./parts/outputter.js');
 var Monitor = require('./parts/monitor.js');
 
 var XXX = function(bindCfg) {
   logger.trace("XXX(" + bindCfg+")");
 	this.binder = require(bindCfg);
 	this.inputter = {};
-	this.outputer_listen = {};
-	this.outputer_connect = {};
+	this.outputter_listen = {};
+	this.outputter_connect = {};
 	this.monitor = {};
 };
 
@@ -46,7 +46,7 @@ XXX.prototype.open_input_output = function(callback){
 					self.startConnect4OutputConnect(cb_inner);
 				}
 			}, function(e, r) {
-				if (!e && r && (r.outputer_listen || r.output_connect) ){
+				if (!e && r && (r.outputter_listen || r.output_connect) ){
 					logger.info("Outputs ok: " + JSON.stringify(r) );
 					cb_outer(null, true);
 				}
@@ -224,10 +224,10 @@ XXX.prototype.startGroupOutputListen = function(schema, outputs, callback) {
 	async.each( outputs, function(output, cb){
 		if ( output === "self" ) output = self.binder.getSelfInput(schema);
 		var info = output.trim().split(':');
-		var tpt = new Outputer(schema, info[0], info[1], "LISTEN");
+		var tpt = new Outputter(schema, info[0], info[1], "LISTEN");
 		tpt.start(function(e, r){
 			if ( ! e ){
-				self.outputer_listen[output.trim()] = tpt;
+				self.outputter_listen[output.trim()] = tpt;
 				one_ok = true;
 			}
 			else{
@@ -236,10 +236,10 @@ XXX.prototype.startGroupOutputListen = function(schema, outputs, callback) {
 		});
 	}, function(err, result){
 		if ( one_ok === true ) {
-			callback(null, "Outputer connect OK");
+			callback(null, "Outputter connect OK");
 		}
 		else {
-			callback(-1, "Outputer connect FAILED");
+			callback(-1, "Outputter connect FAILED");
 		}
 	});
 };
@@ -251,10 +251,10 @@ XXX.prototype.startGroupOutputConnect = function(schema, outputs, callback) {
 	async.each( outputs, function(output, cb){
 		if ( output === "self" ) output = self.binder.getSelfInput(schema);
 		var info = output.trim().split(':');
-		var tpt = new Outputer(schema, info[0], info[1], "CONNECT");
+		var tpt = new Outputter(schema, info[0], info[1], "CONNECT");
 		tpt.start(function(e, r){
 			if ( ! e ){
-				self.outputer_listen[output.trim()] = tpt;
+				self.outputter_listen[output.trim()] = tpt;
 				one_ok = true;
 			}
 			else {
@@ -263,10 +263,10 @@ XXX.prototype.startGroupOutputConnect = function(schema, outputs, callback) {
 		});
 	}, function(err, result){
 		if ( one_ok === true ) {
-			callback(null, "Outputer connect OK.");
+			callback(null, "Outputter connect OK.");
 		}
 		else {
-			callback(-1, "Outputer connect FAILED.");
+			callback(-1, "Outputter connect FAILED.");
 		}
 	});
 };
