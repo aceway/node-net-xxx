@@ -13,13 +13,73 @@ Outputter.prototype.start = function (callback) {
 	var mode_tips = "";
 	if (self.mode === "LISTEN"){
 		mode_tips = "listen on "
+		logger.info("Output " + mode_tips + self.schema  + "://" + self.host + 
+							":" + self.port);
+		self.startListen(callback);
 	}
 	else{
 		mode_tips = "connect to "
+		logger.info("Output " + mode_tips + self.schema  + "://" + self.host + 
+							":" + self.port);
+		self.startConnect(callback);
 	}
 
-	logger.info("Output " + mode_tips + self.schema  + "://" + self.host + ":" + self.port);
-	callback(null, self.host +":"+ self.port+":" + self.mode);
+};
+
+Outputter.prototype.startListen = function( callback ) {
+	var self = this;
+	logger.info("Outputter listen on " + self.schema  + "://" + 
+							self.host + ":" + self.port);
+	switch(self.schema){
+	case 'http':
+		callback(null, self.host +":"+ self.port +
+							" would implement schema:" + self.schema);
+		break;
+	case 'https':
+		callback(1, self.host +":"+ self.port + 
+							" would implement schema:" + self.schema);
+		break;
+	case 'websocket':
+		callback(1, self.host +":"+ self.port + 
+							" would implement schema:" + self.schema);
+		break;
+	case 'tcp':
+		callback(1, self.host +":"+ self.port + 
+							" would implement schema:" + self.schema);
+		break;
+	default:
+		callback(-1, self.host +":"+ self.port + 
+							" not surpported schema:" + self.schema);
+		break;
+	}
+};
+
+Outputter.prototype.startConnect = function( callback ) {
+	var self = this;
+	logger.info("Outputter connect to " + self.schema  + "://" + 
+							self.host + ":" + self.port);
+	switch(self.schema){
+	case 'http':
+		callback(null, self.host +":"+ self.port 
+							+ " would implement schema:" + self.schema);
+		break;
+	case 'https':
+		callback(1, self.host +":"+ self.port 
+							+ " would implement schema:" + self.schema);
+		break;
+	case 'websocket':
+		callback(1, self.host +":"+ self.port 
+							+ " would implement schema:" + self.schema);
+		break;
+	case 'tcp':
+		callback(1, self.host +":"+ self.port 
+							+ " would implement schema:" + self.schema);
+		break;
+	default:
+		callback(-1, self.host +":"+ self.port 
+							+ " not surpported schema:" + self.schema);
+		break;
+	}
 };
 
 module.exports = Outputter;

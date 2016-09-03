@@ -170,18 +170,18 @@ XXX.prototype.startConnect4OutputThere = function( callback ){
 					output_there = true;
 				}
 				else{
-					logger.warn("Listen on output_There: " + key + " " + r + " failed.");
+					logger.warn("Connect to output_There: " + key + " " + r + " failed.");
 				}
 				cb(null);
 			});
 		},
 	  function(err, results) {
 			if ( output_there ){
-				logger.info("Listen for output_There OK");
+				logger.info("Connect to output_There OK");
 				callback(null, true);
 			}
 			else{
-				logger.info("Listen for output_There FAILED");
+				logger.info("Connect to output_There FAILED");
 				callback(-1, false);
 			}
 	});
@@ -190,11 +190,11 @@ XXX.prototype.startConnect4OutputThere = function( callback ){
 XXX.prototype.startOneInput = function(schema, input, callback) {
   //logger.trace("startOneInput(...) => " + input);
 	var self = this;
-	var info = input.split(':');
+	var info = input.trim().split(':');
 	var npt = new Inputter(schema, info[0], info[1]);
 	npt.start(function(err, result){
 		if ( ! err ){
-			self.inputter[input] = npt;
+			self.inputter[input.trim()] = npt;
 		}
 		callback(err, result);
 	});
@@ -203,11 +203,11 @@ XXX.prototype.startOneInput = function(schema, input, callback) {
 XXX.prototype.startOneMonitor = function(schema, monitor, callback) {
   //logger.trace("startOneMonitor(...) => " + monitor);
 	var self = this;
-	var info = monitor.split(':');
+	var info = monitor.trim().split(':');
 	var mnt = new Monitor(schema, info[0], info[1]);
 	mnt.start(function(err, result){
 		if ( ! err ){
-			self.monitor[monitor] = mnt;
+			self.monitor[monitor.trim()] = mnt;
 		}
 		callback(err, result);
 	});
@@ -216,37 +216,54 @@ XXX.prototype.startOneMonitor = function(schema, monitor, callback) {
 XXX.prototype.startGroupOutputHere = function(schema, outputs, callback) {
   //logger.trace("startGroupOutputHere(...) => " + outputs);
 	var self = this;
-	async.every( outputs, function(output, cb){
+	var one_ok = false;
+	async.each( outputs, function(output, cb){
 		if ( output === "self" ) output = self.binder.getSelfInput(schema);
-		var info = output.split(':');
+		var info = output.trim().split(':');
 		var tpt = new Outputer(schema, info[0], info[1], "LISTEN");
 		tpt.start(function(e, r){
 			if ( ! e ){
-				self.outputer_here[output] = tpt;
+				self.outputer_here[output.trim()] = tpt;
+				one_ok = true;
 			}
-			cb(e, r);
+			else{
+			}
+			cb(null, r);
 		});
 	}, function(err, result){
-		callback(err, result);
+		if ( one_ok === true ) {
+			callback(null, "Outputer there OK");
+		}
+		else {
+			callback(-1, "Outputer there FAILED");
+		}
 	});
 };
 
 XXX.prototype.startGroupOutputThere = function(schema, outputs, callback) {
   //logger.trace("startGroupOutputThere(...) => " + outputs);
 	var self = this;
-	var self = this;
-	async.every( outputs, function(output, cb){
+	var one_ok = false;
+	async.each( outputs, function(output, cb){
 		if ( output === "self" ) output = self.binder.getSelfInput(schema);
-		var info = output.split(':');
+		var info = output.trim().split(':');
 		var tpt = new Outputer(schema, info[0], info[1], "CONNECT");
 		tpt.start(function(e, r){
 			if ( ! e ){
-				self.outputer_here[output] = tpt;
+				self.outputer_here[output.trim()] = tpt;
+				one_ok = true;
 			}
-			cb(e, r);
+			else {
+			}
+			cb(null, r);
 		});
 	}, function(err, result){
-		callback(err, result);
+		if ( one_ok === true ) {
+			callback(null, "Outputer there OK.");
+		}
+		else {
+			callback(-1, "Outputer there FAILED.");
+		}
 	});
 };
 
