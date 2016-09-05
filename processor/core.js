@@ -1,12 +1,12 @@
 'use strict';
 var logger = require('../utils/logger.js');
 
-var Core = function () {
+//var handler = function () {
+var handler = { };
+
+handler.dataProcess = function(data){
+	logger.trace('handler dataProcess data...');
 };
 
-Core.prototype.dataProcess = function(data){
-	logger.trace('Core dataProcess data');
-};
-
-var core = new Core();
-module.exports = core;
+//var core = new handler();
+module.exports = handler;

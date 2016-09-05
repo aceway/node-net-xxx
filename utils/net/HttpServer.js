@@ -5,11 +5,11 @@ var logger = require("../logger.js");
 function HttpServer(host, port) {
   this.host = host;
   this.port = port;
-  this.rcvCbs = {};
+  this.rcvCallback = null;
 }
 
 HttpServer.prototype.regRcvCallback = function ( rcvCallback ) {
-	this.rcvCbs[rcvCallback] = true;
+	this.rcvCallback = rcvCallback;
 };
 
 HttpServer.prototype.start = function () {
@@ -22,11 +22,12 @@ HttpServer.prototype.start = function () {
     });
 
     req.on('end', function () {
-			for(var cb in self.rcvCbs){
-				if ( self.rcvCbs[cb] === true ){
-					cb(dataChunks);
-				}
-			};
+			if ( typeof self.rcvCallback === 'function' ){
+				self.rcvCallback(dataChunks);
+			}
+			else{
+				logger.warn("The cb:"+self.rcvCallback+" is not a function.");
+			}
     });
 
     req.on('error', function (err) {

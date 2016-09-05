@@ -1,6 +1,6 @@
 'use strict';
 var logger = require('../utils/logger.js');
-var core = require('../processor/core.js');
+var dataHandler = require('../processor/core.js');
 
 var Inputter = function(schema, host, port) {
 	this.schema = schema;
@@ -23,16 +23,17 @@ Inputter.prototype.start = function (callback) {
 			self.httpInputter = new HttpInputter(self.host, self.port);
 		}
 
-		if ( self.httpInputter !== undefined ){
-			self.httpInputter.regDataProcess( core.dataProcess );
-			callback(null, self.host +":"+ self.port 
-								+ " schema:" + self.schema);
-		}
-		else {
+		if ( self.httpInputter === undefined ){
 			callback(1, self.host +":"+ self.port 
 								+ " schema:" + self.schema + " failed." );
+			break;
 		}
-
+		else {
+			self.httpInputter.regDataProcess( dataHandler.dataProcess );
+			callback(null, self.host +":"+ self.port 
+								+ " schema:" + self.schema);
+			self.httpInputter.start();
+		}
 		break;
 	case 'https':
 		callback(1, self.host +":"+ self.port 
