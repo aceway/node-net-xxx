@@ -17,14 +17,28 @@ var XXX = function(bindCfg) {
 
 XXX.prototype.start = function(callback){
 	var self = this;
-	self.open_inputter_outputter(function(err, res){
-		if (!err && res && res.inputter === true && 
-				res.outputter === true && res.monitor === true){
-			callback(null, res);
+	async.series([
+		function(cb){
+			self.binder.prepareCfg(cb);
+		},
+		function(cb){
+			self.open_inputter_outputter(function(err, res){
+				if (!err && res && res.inputter === true && 
+						res.outputter === true && res.monitor === true){
+					cb(null, res);
+				}
+				else{
+					cb(-1, res);
+				}
+			});
+		}
+	],function(err, res){
+		if ( ! err ){
+			logger.info("Start this node-net-xxx server OK.");
 		}
 		else{
-			callback(-1, res);
 		}
+		callback(err, res);
 	});
 };
 

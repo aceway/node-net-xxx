@@ -1,6 +1,6 @@
 'use strict';
 var logger = require('../utils/logger.js');
-var dataHandler = require('../processor/core.js');
+var dataHandler = require('../processor/data_handler.js');
 
 var Inputter = function(schema, host, port) {
 	this.schema = schema;

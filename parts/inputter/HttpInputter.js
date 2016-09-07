@@ -2,8 +2,8 @@
 var logger = require('../../utils/logger.js');
 var HttpServer = require('../../utils/net/HttpServer.js');
 
-var HttpInputter = function(host, port) {
-	this.httpServer = new HttpServer(host, port);
+var HttpInputter = function(host, port, response) {
+	this.httpServer = new HttpServer(host, port, response);
 	this.dataProcess = {};
 };
 

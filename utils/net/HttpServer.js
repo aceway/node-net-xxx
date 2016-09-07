@@ -2,10 +2,11 @@
 var http = require("http");
 var logger = require("../logger.js");
 
-function HttpServer(host, port) {
+function HttpServer(host, port, response) {
   this.host = host;
   this.port = port;
   this.rcvCallback = null;
+	this.response = !! response;
 }
 
 HttpServer.prototype.regRcvCallback = function ( rcvCallback ) {
@@ -23,7 +24,24 @@ HttpServer.prototype.start = function () {
 
     req.on('end', function () {
 			if ( typeof self.rcvCallback === 'function' ){
-				self.rcvCallback(dataChunks);
+				self.rcvCallback(dataChunks, function(err, outputData){
+					if (! err ){
+						if ( self.response === true ){
+							res.writeHead(200, {'Content-Type': 'text/plain'});
+							res.write(outputData);
+							res.end();
+						}
+						else{
+							res.writeHead(200, {'Content-Type': 'text/plain'});
+							res.end();
+						}
+					}
+					else{
+						res.writeHead(500, {'Content-Type': 'text/plain'});
+						res.end();
+						logger.warn();
+					}
+				});
 			}
 			else{
 				logger.warn("The cb:"+self.rcvCallback+" is not a function.");
