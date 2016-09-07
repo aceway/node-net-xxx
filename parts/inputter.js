@@ -14,8 +14,8 @@ var Inputter = function(schema, host, port) {
 
 Inputter.prototype.start = function (callback) {
 	var self = this;
-	logger.trace("Inputter listen on " + self.schema  + "://" + 
-							self.host + ":" + self.port);
+	//logger.trace("Inputter listen on " + self.schema  + "://" + 
+	//						self.host + ":" + self.port);
 	switch(self.schema){
 	case 'http':
 		if ( self.httpInputter === undefined ){

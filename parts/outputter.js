@@ -28,8 +28,8 @@ Outputter.prototype.start = function (callback) {
 
 Outputter.prototype.startListen = function( callback ) {
 	var self = this;
-	logger.trace("Outputter listen on " + self.schema  + "://" + 
-							self.host + ":" + self.port);
+	//logger.trace("Outputter listen on " + self.schema  + "://" + 
+	//						self.host + ":" + self.port);
 	switch(self.schema){
 	case 'http':
 		callback(null, self.host +":"+ self.port +
@@ -56,8 +56,8 @@ Outputter.prototype.startListen = function( callback ) {
 
 Outputter.prototype.startConnect = function( callback ) {
 	var self = this;
-	logger.trace("Outputter connect to " + self.schema  + "://" + 
-							self.host + ":" + self.port);
+	//logger.trace("Outputter connect to " + self.schema  + "://" + 
+	//						self.host + ":" + self.port);
 	switch(self.schema){
 	case 'http':
 		callback(null, self.host +":"+ self.port 
@@ -68,7 +68,7 @@ Outputter.prototype.startConnect = function( callback ) {
 							+ " would implement schema:" + self.schema);
 		break;
 	case 'websocket':
-		callback(1, self.host +":"+ self.port 
+		callback(null, self.host +":"+ self.port 
 							+ " would implement schema:" + self.schema);
 		break;
 	case 'tcp':

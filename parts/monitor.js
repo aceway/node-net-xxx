@@ -9,8 +9,8 @@ var Monitor = function(schema, host, port) {
 
 Monitor.prototype.start = function (callback) {
 	var self = this;
-	logger.trace("Monitor listen on " + self.schema  + "://" + 
-							self.host + ":" + self.port);
+	//logger.trace("Monitor listen on " + self.schema  + "://" + 
+	//						self.host + ":" + self.port);
 	switch(self.schema){
 	case 'http':
 		callback(null, self.host +":"+ self.port 
@@ -25,7 +25,7 @@ Monitor.prototype.start = function (callback) {
 							+ " would implement schema:" + self.schema);
 		break;
 	case 'tcp':
-		callback(1, self.host +":"+ self.port 
+		callback(null, self.host +":"+ self.port 
 							+ " would implement schema:" + self.schema);
 		break;
 	default:
