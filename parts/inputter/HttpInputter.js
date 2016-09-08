@@ -4,7 +4,7 @@ var HttpServer = require('../../utils/net/HttpServer.js');
 
 var HttpInputter = function(host, port, response) {
 	this.httpServer = new HttpServer(host, port, response);
-	this.dataProcess = {};
+	this.dataProcess = null;
 };
 
 HttpInputter.prototype.regDataProcess = function ( dataProcess ) {
@@ -15,7 +15,7 @@ HttpInputter.prototype.regDataProcess = function ( dataProcess ) {
 	else {
 		logger.warn("HttpServer was not create, could not reg its callback");
 	}
-	this.dataProcess[dataProcess] = true;
+	this.dataProcess = dataProcess;
 };
 
 HttpInputter.prototype.start = function ( ) {
@@ -24,7 +24,7 @@ HttpInputter.prototype.start = function ( ) {
 		self.httpServer.start( );
 	}
 	else {
-		logger.warn("HttpServer was not create, it could not start");
+		logger.warn("HttpServer was not create, it could not be started");
 	}
 };
 

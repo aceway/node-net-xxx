@@ -28,7 +28,12 @@ HttpServer.prototype.start = function () {
 					if (! err ){
 						if ( self.response === true ){
 							res.writeHead(200, {'Content-Type': 'text/plain'});
-							res.write(outputData);
+							if ( outputData && outputData.length > 0){
+								res.write(outputData);
+							}
+							else{
+								res.write("Nothing response");
+							}
 							res.end();
 						}
 						else{

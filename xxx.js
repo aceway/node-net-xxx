@@ -212,7 +212,8 @@ XXX.prototype.startOneInputter = function(schema, inputter, callback) {
   //logger.trace("startOneInputter(...) => " + inputter);
 	var self = this;
 	var info = inputter.trim().split(':');
-	var npt = new Inputter(schema, info[0], info[1]);
+	var response = self.binder.isOutputterSelf(schema);
+	var npt = new Inputter(schema, info[0], info[1], response);
 	npt.start(function(err, result){
 		if ( ! err ){
 			self.inputter[inputter.trim()] = npt;

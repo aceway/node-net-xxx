@@ -2,7 +2,7 @@
 var logger = require('../utils/logger.js');
 var dataHandler = require('../processor/data_handler.js');
 
-var Inputter = function(schema, host, port) {
+var Inputter = function(schema, host, port, response) {
 	this.schema = schema;
 	this.host = host;
 	this.port = port;
@@ -10,6 +10,7 @@ var Inputter = function(schema, host, port) {
 	this.httpsInputter = undefined;
 	this.wsInputter = undefined;
 	this.tcpInputter = undefined;
+	this.response = !! response;
 };
 
 Inputter.prototype.start = function (callback) {
@@ -20,7 +21,7 @@ Inputter.prototype.start = function (callback) {
 	case 'http':
 		if ( self.httpInputter === undefined ){
 			var HttpInputter = require('./inputter/HttpInputter.js');
-			self.httpInputter = new HttpInputter(self.host, self.port);
+			self.httpInputter = new HttpInputter(self.host, self.port, self.response);
 		}
 
 		if ( self.httpInputter === undefined ){
