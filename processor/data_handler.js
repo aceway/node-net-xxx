@@ -5,9 +5,9 @@ var dataHandler = function () {
 }
 
 dataHandler.prototype.dataProcess = function(data, callback){
-	logger.trace('handler dataProcess data...');
+	logger.trace('handler dataProcess data: ' + JSON.stringify(data));
 	if (typeof callback === 'function') {
-		callback(null, data);
+		callback(null, JSON.stringify(data));
 	}
 };
 

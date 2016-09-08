@@ -1,14 +1,3 @@
-/*
- *************************************************************************
- *    File Name:  TcpClient.js
- *       Author: Taomee Shanghai,Inc.
- *         Mail: aceway@taomee.com
- * Created Time: Fri 22 Jul 2016 06:01:13 PM CST
- * 
- *  Description: 
- * 
- ************************************************************************
-*/
 'use strict';
 var util = require('util');
 var net = require('net');
