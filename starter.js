@@ -3,7 +3,7 @@ var colors = require('colors');
 var logger = require('./utils/logger.js');
 var xxx = require('./xxx.js');
 
-var x = new xxx('./utils/binder.js');
+var x = new xxx('./config/bind.json');
 x.start(function(e, r){
   if ( e ){
     logger.error( JSON.stringify(r).red );

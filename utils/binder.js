@@ -31,5 +31,6 @@ Binder.prototype.isOutputterSelf = function(schema) {
 	return false;
 }
 
-var binder = new Binder('../config/bind.json');
-module.exports = binder;
+//var binder = new Binder('../config/bind.json');
+//module.exports = binder;
+module.exports = Binder;

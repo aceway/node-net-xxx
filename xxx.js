@@ -1,15 +1,20 @@
 'use strict';
 var async = require('async');
 var logger = require('./utils/logger.js');
+var path = require('path');
 
 var Inputter = require('./parts/inputter.js');
 var Outputter = require('./parts/outputter.js');
 var Monitor = require('./parts/monitor.js');
 var dataHandler = require('./processor/data_handler.js');
+var Binder = require('./utils/binder.js');
 
 var XXX = function(bindCfg) {
   logger.trace("XXX(" + bindCfg+")");
-  this.binder = require(bindCfg);
+	if ( !path.isAbsolute(bindCfg) ){
+		bindCfg = path.join(process.cwd(), bindCfg);
+	}
+  this.binder = new Binder(bindCfg);
   this.inputter = {};
   this.outputter_listen = {};
   this.outputter_connect = {};
