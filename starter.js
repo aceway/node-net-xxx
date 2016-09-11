@@ -5,12 +5,12 @@ var xxx = require('./xxx.js');
 
 var x = new xxx('./utils/binder.js');
 x.start(function(e, r){
-	if ( e ){
-		logger.error( JSON.stringify(r).red );
-	}
-	else{
-		logger.info( JSON.stringify(r).green );
-	}
+  if ( e ){
+    logger.error( JSON.stringify(r).red );
+  }
+  else{
+    logger.info( JSON.stringify(r).green );
+  }
 });
 
 process.on('uncaughtException', function (err) {

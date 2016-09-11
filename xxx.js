@@ -9,204 +9,204 @@ var dataHandler = require('./processor/data_handler.js');
 
 var XXX = function(bindCfg) {
   logger.trace("XXX(" + bindCfg+")");
-	this.binder = require(bindCfg);
-	this.inputter = {};
-	this.outputter_listen = {};
-	this.outputter_connect = {};
-	this.monitor = {};
+  this.binder = require(bindCfg);
+  this.inputter = {};
+  this.outputter_listen = {};
+  this.outputter_connect = {};
+  this.monitor = {};
 };
 
 XXX.prototype.start = function(callback){
-	var self = this;
-	async.series([
-		function(cb){
-			self.binder.prepareCfg(cb);
-		},
-		function(cb){
-			self.open_inputter_outputter(function(err, res){
-				if (!err && res && res.inputter === true && 
-						res.outputter === true && res.monitor === true){
-					cb(null, res);
-				}
-				else{
-					cb(-1, res);
-				}
-			});
-		}
-	],function(err, res){
-		if ( ! err ){
-			logger.info("Start this node-net-xxx server OK.");
-		}
-		else{
-		}
-		callback(err, res);
-	});
+  var self = this;
+  async.series([
+    function(cb){
+      self.binder.prepareCfg(cb);
+    },
+    function(cb){
+      self.open_inputter_outputter(function(err, res){
+        if (!err && res && res.inputter === true && 
+            res.outputter === true && res.monitor === true){
+          cb(null, res);
+        }
+        else{
+          cb(-1, res);
+        }
+      });
+    }
+  ],function(err, res){
+    if ( ! err ){
+      logger.info("Start this node-net-xxx server OK.");
+    }
+    else{
+    }
+    callback(err, res);
+  });
 };
 
 // inputter, outputter and monitor must be all ok, then OK
 XXX.prototype.open_inputter_outputter = function(callback){
   logger.trace("open_inputter_outputter( ...)");
-	var self = this;
+  var self = this;
 
-	async.series({
-		inputter: function(cb_outer) {
-			self.startListen4Inputter(cb_outer);
-		},
-		outputter: function(cb_outer){
-			async.parallel({
-				outputter_listen: function(cb_inner) {
-					self.startListen4OutputListen(cb_inner);
-				},
-				outputter_connect: function(cb_inner) {
-					self.startConnect4OutputConnect(cb_inner);
-				}
-			}, function(e, r) {
-				if (!e && r && (r.outputter_listen || r.outputter_connect) ){
-					logger.info("Outputters ok: " + JSON.stringify(r) );
-					cb_outer(null, true);
-				}
-				else{
-					logger.error("Outputters failed: " + JSON.stringify(r) );
-					cb_outer(-1, r);
-					//cb_outer(-1, false);
-				}
-			});
-		},
-		monitor: function(cb_outer){
-			self.startListen4Monitor(cb_outer);
-		}
-	}, function(err, results){
-		callback(err, results);
-	});
+  async.series({
+    inputter: function(cb_outer) {
+      self.startListen4Inputter(cb_outer);
+    },
+    outputter: function(cb_outer){
+      async.parallel({
+        outputter_listen: function(cb_inner) {
+          self.startListen4OutputListen(cb_inner);
+        },
+        outputter_connect: function(cb_inner) {
+          self.startConnect4OutputConnect(cb_inner);
+        }
+      }, function(e, r) {
+        if (!e && r && (r.outputter_listen || r.outputter_connect) ){
+          logger.info("Outputters ok: " + JSON.stringify(r) );
+          cb_outer(null, true);
+        }
+        else{
+          logger.error("Outputters failed: " + JSON.stringify(r) );
+          cb_outer(-1, r);
+          //cb_outer(-1, false);
+        }
+      });
+    },
+    monitor: function(cb_outer){
+      self.startListen4Monitor(cb_outer);
+    }
+  }, function(err, results){
+    callback(err, results);
+  });
 };
 
 // any only of inputter ok, then start listen OK
 XXX.prototype.startListen4Inputter = function(callback){
   logger.trace("startListen4Inputter(...)");
-	var self = this;
-	var inputter_ok = false;
-	async.each( Object.keys(self.binder.cfg.inputter),
-	  function(key, cb) {
-			self.startOneInputter(key, self.binder.cfg.inputter[key], function(e, r){
-				if ( !e ){
-					inputter_ok = true;
-					logger.info("Inputter listen on: " + key + " " + r + " OK.");
-				}
-				else{
-					logger.warn("Inputter listen on: " + key + " " + r + " failed.");
-				}
-				cb(null);
-			});
-		},
-	  function(err) {
-			if ( inputter_ok ){
-				logger.info("Listen for inputter OK");
-				callback(null, true);
-			}
-			else{
-				logger.error("Listen for inputter FAILED");
-				callback(-1, false);
-			}
-	});
+  var self = this;
+  var inputter_ok = false;
+  async.each( Object.keys(self.binder.cfg.inputter),
+    function(key, cb) {
+      self.startOneInputter(key, self.binder.cfg.inputter[key], function(e, r){
+        if ( !e ){
+          inputter_ok = true;
+          logger.info("Inputter listen on: " + key + " " + r + " OK.");
+        }
+        else{
+          logger.warn("Inputter listen on: " + key + " " + r + " failed.");
+        }
+        cb(null);
+      });
+    },
+    function(err) {
+      if ( inputter_ok ){
+        logger.info("Listen for inputter OK");
+        callback(null, true);
+      }
+      else{
+        logger.error("Listen for inputter FAILED");
+        callback(-1, false);
+      }
+  });
 };
 
 // any only of monitor ok, then start listen OK
 XXX.prototype.startListen4Monitor = function(callback){
   logger.trace("startListen4Monitor(...)");
-	var self = this;
-	var monitor_ok = false;
-	async.each( Object.keys(self.binder.cfg.monitor),
-	  function(key, cb) {
-			self.startOneMonitor(key, self.binder.cfg.monitor[key], function(e, r){
-				if ( ! e ){
-					monitor_ok = true;
-					logger.info("Monitor listen on: " + key + " " + r + " OK.");
-				}
-				else{
-					logger.warn("Monitor listen on: " + key + " " + r + " failed.");
-				}
-				cb(null);
-			});
-		},
-	  function(err) {
-			if ( monitor_ok ){
-				logger.info("Listen for monitor OK");
-				callback(null, true);
-			}
-			else{
-				logger.error("Listen for monitor FAILED");
-				callback(-1, false);
-			}
-	});
+  var self = this;
+  var monitor_ok = false;
+  async.each( Object.keys(self.binder.cfg.monitor),
+    function(key, cb) {
+      self.startOneMonitor(key, self.binder.cfg.monitor[key], function(e, r){
+        if ( ! e ){
+          monitor_ok = true;
+          logger.info("Monitor listen on: " + key + " " + r + " OK.");
+        }
+        else{
+          logger.warn("Monitor listen on: " + key + " " + r + " failed.");
+        }
+        cb(null);
+      });
+    },
+    function(err) {
+      if ( monitor_ok ){
+        logger.info("Listen for monitor OK");
+        callback(null, true);
+      }
+      else{
+        logger.error("Listen for monitor FAILED");
+        callback(-1, false);
+      }
+  });
 };
 
 // any only of outputter listen ok, then start listen OK
 XXX.prototype.startListen4OutputListen = function( callback ){
   logger.trace("startListen4OutputListen(...)");
-	var self = this;
-	var outputter_listen = false;
-	async.each( Object.keys(self.binder.cfg.outputter_listen),
-	  function(key, cb) {
-			//logger.debug("OUTPUT listen: " + key);
-			self.startGroupOutputListen(key, 
-																self.binder.cfg.outputter_listen[key], 
-																function(e, r){
-				if ( ! e ){
-					outputter_listen = true;
-					logger.info("Outputter_listen listen on : " + key + " " + r + " OK.");
-				}
-				else{
-					logger.warn("Outputter_listen listen on: " + key + " " + 
-												r + " failed.");
-				}
-				cb(null);
-			});
-		},
-	  function(err, results) {
-			if ( outputter_listen ){
-				logger.info("Listen for outputter_listen OK");
-				callback(null, true);
-			}
-			else{
-				logger.warn("Listen for outputter_listen FAILED");
-				callback(-1, false);
-			}
-	});
+  var self = this;
+  var outputter_listen = false;
+  async.each( Object.keys(self.binder.cfg.outputter_listen),
+    function(key, cb) {
+      //logger.debug("OUTPUT listen: " + key);
+      self.startGroupOutputListen(key, 
+                                self.binder.cfg.outputter_listen[key], 
+                                function(e, r){
+        if ( ! e ){
+          outputter_listen = true;
+          logger.info("Outputter_listen listen on : " + key + " " + r + " OK.");
+        }
+        else{
+          logger.warn("Outputter_listen listen on: " + key + " " + 
+                        r + " failed.");
+        }
+        cb(null);
+      });
+    },
+    function(err, results) {
+      if ( outputter_listen ){
+        logger.info("Listen for outputter_listen OK");
+        callback(null, true);
+      }
+      else{
+        logger.warn("Listen for outputter_listen FAILED");
+        callback(-1, false);
+      }
+  });
 };
 
 // any only of outputter Connect ok, then start listen OK
 XXX.prototype.startConnect4OutputConnect = function( callback ){
   logger.trace("startConnect4OutputConnect(...)");
-	var self = this;
-	var outputter_connect = false;
-	async.each( Object.keys(self.binder.cfg.outputter_connect),
-	  function(key, cb) {
-			//logger.debug("OUTPUT connect: " + key);
-			self.startGroupOutputConnect(key, 
-																self.binder.cfg.outputter_connect[key],
-																function(e, r){
-				if ( ! e ){
-					outputter_connect = true;
-					logger.info("Outputter_Connect connect to: " + key + " " + 
-												r + " OK.");
-				}
-				else{
-					logger.warn("Outputter_Connect connect to: " + key + " " +
-												r + " failed.");
-				}
-				cb(null);
-			});
-		},
-	  function(err, results) {
-			if ( outputter_connect ){
-				logger.info("Connect to outputter_Connect OK");
-				callback(null, true);
-			}
-			else{
-				logger.warn("Connect to outputter_Connect FAILED");
-				callback(-1, false);
-			}
-	});
+  var self = this;
+  var outputter_connect = false;
+  async.each( Object.keys(self.binder.cfg.outputter_connect),
+    function(key, cb) {
+      //logger.debug("OUTPUT connect: " + key);
+      self.startGroupOutputConnect(key, 
+                                self.binder.cfg.outputter_connect[key],
+                                function(e, r){
+        if ( ! e ){
+          outputter_connect = true;
+          logger.info("Outputter_Connect connect to: " + key + " " + 
+                        r + " OK.");
+        }
+        else{
+          logger.warn("Outputter_Connect connect to: " + key + " " +
+                        r + " failed.");
+        }
+        cb(null);
+      });
+    },
+    function(err, results) {
+      if ( outputter_connect ){
+        logger.info("Connect to outputter_Connect OK");
+        callback(null, true);
+      }
+      else{
+        logger.warn("Connect to outputter_Connect FAILED");
+        callback(-1, false);
+      }
+  });
 };
 
 XXX.prototype.startOneInputter = function(schema, inputter, callback) {

@@ -2,9 +2,9 @@
 var logger = require('../utils/logger.js');
 
 var Monitor = function(schema, host, port) {
-	this.schema = schema;
-	this.host = host;
-	this.port = port;
+  this.schema = schema;
+  this.host = host;
+  this.port = port;
 };
 
 Monitor.prototype.start = function (dataHandler, callback) {
