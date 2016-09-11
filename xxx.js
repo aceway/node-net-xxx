@@ -5,6 +5,7 @@ var logger = require('./utils/logger.js');
 var Inputter = require('./parts/inputter.js');
 var Outputter = require('./parts/outputter.js');
 var Monitor = require('./parts/monitor.js');
+var dataHandler = require('./processor/data_handler.js');
 
 var XXX = function(bindCfg) {
   logger.trace("XXX(" + bindCfg+")");
@@ -214,7 +215,7 @@ XXX.prototype.startOneInputter = function(schema, inputter, callback) {
 	var info = inputter.trim().split(':');
 	var response = self.binder.isOutputterSelf(schema);
 	var npt = new Inputter(schema, info[0], info[1], response);
-	npt.start(function(err, result){
+	npt.start(dataHandler, function(err, result){
 		if ( ! err ){
 			self.inputter[inputter.trim()] = npt;
 		}
@@ -227,7 +228,7 @@ XXX.prototype.startOneMonitor = function(schema, monitor, callback) {
 	var self = this;
 	var info = monitor.trim().split(':');
 	var mnt = new Monitor(schema, info[0], info[1]);
-	mnt.start(function(err, result){
+	mnt.start(dataHandler, function(err, result){
 		if ( ! err ){
 			self.monitor[monitor.trim()] = mnt;
 		}
@@ -243,7 +244,7 @@ XXX.prototype.startGroupOutputListen = function(schema, outputters, callback){
 		if ( outputter==="self" ) outputter = self.binder.getSelfInputter(schema);
 		var info = outputter.trim().split(':');
 		var tpt = new Outputter(schema, info[0], info[1], "LISTEN");
-		tpt.start(function(e, r){
+		tpt.start(dataHandler, function(e, r){
 			if ( ! e ){
 				self.outputter_listen[outputter.trim()] = tpt;
 				one_ok = true;
@@ -270,7 +271,7 @@ XXX.prototype.startGroupOutputConnect = function(schema, outputters, callback){
 		if ( outputter==="self" ) outputter = self.binder.getSelfInputter(schema);
 		var info = outputter.trim().split(':');
 		var tpt = new Outputter(schema, info[0], info[1], "CONNECT");
-		tpt.start(function(e, r){
+		tpt.start(dataHandler, function(e, r){
 			if ( ! e ){
 				self.outputter_listen[outputter.trim()] = tpt;
 				one_ok = true;

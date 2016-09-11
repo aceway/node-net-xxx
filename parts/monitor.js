@@ -7,7 +7,7 @@ var Monitor = function(schema, host, port) {
 	this.port = port;
 };
 
-Monitor.prototype.start = function (callback) {
+Monitor.prototype.start = function (dataHandler, callback) {
 	var self = this;
 	//logger.trace("Monitor listen on " + self.schema  + "://" + 
 	//						self.host + ":" + self.port);

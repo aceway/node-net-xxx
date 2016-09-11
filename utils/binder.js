@@ -13,12 +13,14 @@ Binder.prototype.prepareCfg = function (callback) {
 };
 
 // outputter self's inputter config.
+// every schema has only one inputter
 Binder.prototype.getSelfInputter = function (schema) {
 	var self = this;
 	return self.cfg.inputter[schema]
 };
 
 // Is a inputter would output to self connection ?
+// every schema has only one inputter
 Binder.prototype.isOutputterSelf = function(schema) {
 	var self = this;
 	for(var idx in self.cfg.outputter_listen[schema]){

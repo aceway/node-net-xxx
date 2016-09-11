@@ -8,7 +8,7 @@ var Outputter = function(schema, host, port, mode) {
 	this.mode = mode;
 };
 
-Outputter.prototype.start = function (callback) {
+Outputter.prototype.start = function (dataHandler, callback) {
 	var self = this;
 	var mode_tips = "";
 	if (self.mode === "LISTEN"){

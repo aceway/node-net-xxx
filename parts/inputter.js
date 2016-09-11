@@ -1,6 +1,5 @@
 'use strict';
 var logger = require('../utils/logger.js');
-var dataHandler = require('../processor/data_handler.js');
 
 var Inputter = function(schema, host, port, response) {
 	this.schema = schema;
@@ -13,7 +12,7 @@ var Inputter = function(schema, host, port, response) {
 	this.response = !! response;
 };
 
-Inputter.prototype.start = function (callback) {
+Inputter.prototype.start = function (dataHandler, callback) {
 	var self = this;
 	//logger.trace("Inputter listen on " + self.schema  + "://" + 
 	//						self.host + ":" + self.port);
