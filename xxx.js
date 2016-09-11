@@ -11,7 +11,7 @@ var Binder = require('./utils/binder.js');
 
 var XXX = function(bindCfg) {
   logger.trace("XXX(" + bindCfg+")");
-	if ( !path.isAbsolute(bindCfg) ){
+	if ( ! path.isAbsolute(bindCfg) ){
 		bindCfg = path.join(process.cwd(), bindCfg);
 	}
   this.binder = new Binder(bindCfg);
