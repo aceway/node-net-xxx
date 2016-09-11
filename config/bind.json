@@ -6,6 +6,7 @@
     "http" : [ "self", "127.0.0.1:8001" ]
   },
   "outputter_connect": {
+    "http": [ "127.0.0.1:8005" ],
     "websocket": [ "127.0.0.1:8005" ]
   },
   "monitor": {

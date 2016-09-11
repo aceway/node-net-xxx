@@ -5,7 +5,7 @@ var urlMgr = require('url');
 
 var logger = require("../logger.js");
 
-function HttpServer(host, port, response) {
+var HttpServer = function(host, port, response) {
   this.host = host;
   this.port = port;
   this.rcvCallback = null;

@@ -1,11 +1,13 @@
 'use strict';
 var logger = require('../utils/logger.js');
+var HttpClient = require('../utils/net/HttpClient.js');
 
 var Outputter = function(schema, host, port, mode) {
 	this.schema = schema;
 	this.host = host;
 	this.port = port;
 	this.mode = mode;
+	this.outputter = null;
 };
 
 Outputter.prototype.start = function (dataHandler, callback) {
@@ -60,8 +62,16 @@ Outputter.prototype.startConnect = function( callback ) {
 	//						self.host + ":" + self.port);
 	switch(self.schema){
 	case 'http':
-		callback(null, self.host +":"+ self.port 
-							+ " would implement schema:" + self.schema);
+		var outputter = new HttpClient(self.host, self.port);
+		outputter.testWorking(function(e, r){
+			if ( !e ){
+				self.outputter = outputter;
+			}
+			else{
+				logger.warn("HttpClient connect to a server failed " + e + ' '  + r);
+			}
+			callback(e, r);
+		});	
 		break;
 	case 'https':
 		callback(1, self.host +":"+ self.port 
