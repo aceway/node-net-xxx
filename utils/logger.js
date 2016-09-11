@@ -25,14 +25,15 @@ Date.prototype.format = function(fmt){
 											  o[k] : ("00"+ o[k]).substr((""+ o[k]).length));
   return fmt;
 }
+var Logger = {};
 
-var Logger = function(optionsConfig) {
+Logger.create = function(optionsConfig) {
 	this.prepare_();
 	this.option = require(optionsConfig);
 	this.init();
 };
 
-Logger.prototype.prepare_ = function() {
+Logger.prepare_ = function() {
 	var tmObj = new Date();
   var dirPath = process.cwd() + "/logs/";
   if( !fs.existsSync(dirPath) ){
@@ -61,8 +62,8 @@ Logger.prototype.prepare_ = function() {
 	}
 }
 
-Logger.prototype.init = function () {
-	var self = this;
+Logger.init = function () {
+	var self = Logger;
   log4js.configure(self.option);
 
   // 终端调试输出
@@ -92,16 +93,16 @@ Logger.prototype.init = function () {
   self.logFatal = log4js.getLogger('logFatal');
 };
 
-Logger.prototype.console = function (msg) {
-	var self = this;
+Logger.console = function (msg) {
+	var self = Logger;
   if (typeof self.logConsole === 'undefined') {
     return ;
   }
   self.logConsole.trace(msg);
 }
 
-Logger.prototype.trace = function (msg) {
-	var self = this;
+Logger.trace = function (msg) {
+	var self = Logger;
   self.logConsole.trace(msg);
   self.logAll_.trace(msg);
 
@@ -111,8 +112,8 @@ Logger.prototype.trace = function (msg) {
   self.logTrace.trace(msg);
 }
 
-Logger.prototype.debug = function (msg) {
-	var self = this;
+Logger.debug = function (msg) {
+	var self = Logger;
   self.logConsole.debug(msg);
   self.logAll_.debug(msg);
 
@@ -122,8 +123,8 @@ Logger.prototype.debug = function (msg) {
   self.logDebug.debug(msg);
 }
 
-Logger.prototype.info = function (msg) {
-	var self = this;
+Logger.info = function (msg) {
+	var self = Logger;
   self.logConsole.info(msg);
   self.logAll_.info(msg);
 
@@ -133,8 +134,8 @@ Logger.prototype.info = function (msg) {
   self.logInfo.info(msg);
 }
 
-Logger.prototype.warn = function (msg) {
-	var self = this;
+Logger.warn = function (msg) {
+	var self = Logger;
   self.logConsole.warn(msg);
   self.logAll_.warn(msg);
 
@@ -144,8 +145,8 @@ Logger.prototype.warn = function (msg) {
   self.logWarn.warn(msg);
 }
 
-Logger.prototype.error = function (msg) {
-	var self = this;
+Logger.error = function (msg) {
+	var self = Logger;
   self.logConsole.error(msg);
   self.logAll_.error(msg);
 
@@ -155,8 +156,8 @@ Logger.prototype.error = function (msg) {
   self.logError.error(msg);
 }
 
-Logger.prototype.fatal = function (msg) {
-	var self = this;
+Logger.fatal = function (msg) {
+	var self = Logger;
   self.logConsole.fatal(msg);
   self.logAll_.fatal(msg);
 
@@ -168,5 +169,4 @@ Logger.prototype.fatal = function (msg) {
 	log4js.shutdown(function() { process.exit(-1); });
 }
 
-var logger = new Logger('../config/log4js.json');
-module.exports = logger;
+module.exports = Logger;

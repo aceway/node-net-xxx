@@ -1,24 +1,57 @@
 'use strict';
-var async = require('async');
-var logger = require('./utils/logger.js');
+var fs = require('fs');
 var path = require('path');
+var async = require('async');
 
+var logger = require('./utils/logger.js');
 var Inputter = require('./parts/inputter.js');
 var Outputter = require('./parts/outputter.js');
 var Monitor = require('./parts/monitor.js');
 var dataHandler = require('./processor/data_handler.js');
 var Binder = require('./utils/binder.js');
 
-var XXX = function(bindCfg) {
-  logger.trace("XXX(" + bindCfg+")");
-	if ( ! path.isAbsolute(bindCfg) ){
-		bindCfg = path.join(process.cwd(), bindCfg);
+var XXX = function(bindCfg, logCfg) {
+	if ( typeof logCfg === 'string' && logCfg.length > 0){
+		if ( ! path.isAbsolute(logCfg) ){
+			logCfg = path.join(process.cwd(), logCfg);
+		}
 	}
+	else{
+		logCfg = path.join(process.cwd(), "./config/log4js.json");
+	}
+	try{
+		fs.accessSync(logCfg, fs.R_OK);
+	}
+	catch(e){
+		console.error("Access log4js config failed.");
+		console.error(e);
+		process.exit(1);
+	};
+	logger.create(logCfg);
+
+	if ( typeof bindCfg === 'string' && bindCfg.length > 0){
+		if ( ! path.isAbsolute(bindCfg) ){
+			bindCfg = path.join(process.cwd(), bindCfg);
+		}
+	}
+	else{
+			bindCfg = path.join(process.cwd(), "./config/bind.json");
+	}
+	try{
+		fs.accessSync(bindCfg, fs.R_OK);
+	}
+	catch(e){
+		console.error("Access bind config failed.");
+		console.error(e);
+		process.exit(1);
+	};
   this.binder = new Binder(bindCfg);
+
   this.inputter = {};
   this.outputter_listen = {};
   this.outputter_connect = {};
   this.monitor = {};
+  logger.info("XXX(" + bindCfg +", " + logCfg + ")");
 };
 
 XXX.prototype.start = function(callback){

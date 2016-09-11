@@ -2,7 +2,6 @@
 var logger = require('./logger.js');
 
 var Binder = function(cfgJson){
-	logger.trace(cfgJson);
   this.cfg = require(cfgJson);
 };
 
