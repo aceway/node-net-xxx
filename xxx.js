@@ -4,11 +4,13 @@ var path = require('path');
 var async = require('async');
 
 var logger = require('./utils/logger.js');
+var Binder = require('./utils/binder.js');
+
 var Inputter = require('./parts/inputter.js');
 var Outputter = require('./parts/outputter.js');
 var Monitor = require('./parts/monitor.js');
+
 var dataHandler = require('./processor/data_handler.js');
-var Binder = require('./utils/binder.js');
 
 var XXX = function(bindCfg, logCfg) {
 	if ( typeof logCfg === 'string' && logCfg.length > 0){
@@ -61,7 +63,7 @@ XXX.prototype.start = function(callback){
       self.binder.prepareCfg(cb);
     },
     function(cb){
-      self.open_inputter_outputter(function(err, res){
+      self.open_inputter_outputter_monitor(function(err, res){
         if (!err && res && res.inputter === true && 
             res.outputter === true && res.monitor === true){
           cb(null, res);
@@ -82,12 +84,13 @@ XXX.prototype.start = function(callback){
 };
 
 // inputter, outputter and monitor must be all ok, then OK
-XXX.prototype.open_inputter_outputter = function(callback){
-  logger.trace("open_inputter_outputter( ...)");
+XXX.prototype.open_inputter_outputter_monitor = function(callback){
+  logger.trace("open_inputter_outputter_monitor( ...)");
   var self = this;
 
   async.series({
     inputter: function(cb_outer) {
+			// any one of inputter ok, then start listen OK
       self.startListen4Inputter(cb_outer);
     },
     outputter: function(cb_outer){
@@ -111,6 +114,7 @@ XXX.prototype.open_inputter_outputter = function(callback){
       });
     },
     monitor: function(cb_outer){
+			// any one of monitor ok, then start listen OK
       self.startListen4Monitor(cb_outer);
     }
   }, function(err, results){
@@ -118,7 +122,7 @@ XXX.prototype.open_inputter_outputter = function(callback){
   });
 };
 
-// any only of inputter ok, then start listen OK
+// any one of inputter ok, then start listen OK
 XXX.prototype.startListen4Inputter = function(callback){
   logger.trace("startListen4Inputter(...)");
   var self = this;
@@ -148,7 +152,7 @@ XXX.prototype.startListen4Inputter = function(callback){
   });
 };
 
-// any only of monitor ok, then start listen OK
+// any one of monitor ok, then start listen OK
 XXX.prototype.startListen4Monitor = function(callback){
   logger.trace("startListen4Monitor(...)");
   var self = this;
@@ -178,7 +182,7 @@ XXX.prototype.startListen4Monitor = function(callback){
   });
 };
 
-// any only of outputter listen ok, then start listen OK
+// any one of outputter listen ok, then start listen OK
 XXX.prototype.startListen4OutputListen = function( callback ){
   logger.trace("startListen4OutputListen(...)");
   var self = this;
@@ -212,7 +216,7 @@ XXX.prototype.startListen4OutputListen = function( callback ){
   });
 };
 
-// any only of outputter Connect ok, then start listen OK
+// any one of outputter Connect ok, then start listen OK
 XXX.prototype.startConnect4OutputConnect = function( callback ){
   logger.trace("startConnect4OutputConnect(...)");
   var self = this;
