@@ -18,33 +18,16 @@ Inputter.prototype.start = function (dataHandler, callback) {
 	//						self.host + ":" + self.port);
 	switch(self.schema){
 	case 'http':
-		if ( self.httpInputter === undefined ){
-			var HttpInputter = require('./inputter/HttpInputter.js');
-			self.httpInputter = new HttpInputter(self.host, self.port, self.response);
-		}
-    if ( self.httpInputter === undefined ){
-      callback(1, self.host +":"+ self.port 
-                + " schema:" + self.schema + " failed." );
-      break;
-    }
-    else {
-      self.httpInputter.regDataProcess( dataHandler.dataProcess );
-      callback(null, self.host +":"+ self.port 
-                + " schema:" + self.schema);
-      self.httpInputter.start();
-    }
+    self.startHttp(dataHandler, callback);
     break;
   case 'https':
-    callback(1, self.host +":"+ self.port 
-              + " would implement schema:" + self.schema);
+    self.startHttps(dataHandler, callback);
     break;
   case 'websocket':
-    callback(1, self.host +":"+ self.port 
-              + " would implement schema:" + self.schema);
+    self.startWebSocket(dataHandler, callback);
     break;
   case 'tcp':
-    callback(1, self.host +":"+ self.port 
-              + " would implement schema:" + self.schema);
+    self.startTcp(dataHandler, callback);
     break;
   default:
     callback(-1, self.host +":"+ self.port 
@@ -52,5 +35,38 @@ Inputter.prototype.start = function (dataHandler, callback) {
     break;
   }
 };
+
+Inputter.prototype.startHttp = function (dataHandler, callback) {
+  var self = this;
+	if ( self.httpInputter === undefined ){
+		var HttpInputter = require('./inputter/HttpInputter.js');
+		self.httpInputter = new HttpInputter(self.host, self.port, self.response);
+	}
+  if ( self.httpInputter === undefined ){
+    callback(1, self.host +":"+ self.port 
+              + " schema:" + self.schema + " failed." );
+  }
+  else {
+    self.httpInputter.regDataProcess( dataHandler.dataProcess );
+    callback(null, self.host +":"+ self.port 
+              + " schema:" + self.schema);
+    self.httpInputter.start();
+  }
+}
+
+Inputter.prototype.startHttps = function (dataHandler, callback) {
+  callback(1, self.host +":"+ self.port 
+           + " would implement schema:" + self.schema);
+}
+
+Inputter.prototype.startWebSocket = function (dataHandler, callback) {
+  callback(1, self.host +":"+ self.port 
+           + " would implement schema:" + self.schema);
+}
+
+Inputter.prototype.startTcp = function (dataHandler, callback) {
+  callback(1, self.host +":"+ self.port 
+           + " would implement schema:" + self.schema);
+}
 
 module.exports = Inputter;

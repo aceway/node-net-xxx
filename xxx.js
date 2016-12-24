@@ -85,7 +85,7 @@ XXX.prototype.start = function(callback){
 
 // inputter, outputter and monitor must be all ok, then OK
 XXX.prototype.open_inputter_outputter_monitor = function(callback){
-  logger.trace("open_inputter_outputter_monitor( ...)");
+  logger.trace("open_inputter_outputter_monitor(...)");
   var self = this;
 
   async.series({
@@ -96,7 +96,7 @@ XXX.prototype.open_inputter_outputter_monitor = function(callback){
     outputter: function(cb_outer){
       async.parallel({
         outputter_listen: function(cb_inner) {
-          self.startListen4OutputListen(cb_inner);
+          self.startListen4Output(cb_inner);
         },
         outputter_connect: function(cb_inner) {
           self.startConnect4OutputConnect(cb_inner);
@@ -183,8 +183,8 @@ XXX.prototype.startListen4Monitor = function(callback){
 };
 
 // any one of outputter listen ok, then start listen OK
-XXX.prototype.startListen4OutputListen = function( callback ){
-  logger.trace("startListen4OutputListen(...)");
+XXX.prototype.startListen4Output= function( callback ){
+  logger.trace("startListen4Output(...)");
   var self = this;
   var outputter_listen = false;
   async.each( Object.keys(self.binder.cfg.outputter_listen),
