@@ -25,10 +25,9 @@ var XXX = function(bindCfg, logCfg) {
 		fs.accessSync(logCfg, fs.R_OK);
 	}
 	catch(e){
-		console.error("Access log4js config failed.");
-		console.error(e);
+		console.error("Access log4js config failed:" + e);
 		process.exit(1);
-	};
+	}
 	logger.create(logCfg);
 
 	if ( typeof bindCfg === 'string' && bindCfg.length > 0){
@@ -46,7 +45,7 @@ var XXX = function(bindCfg, logCfg) {
 		console.error("Access bind config failed.");
 		console.error(e);
 		process.exit(1);
-	};
+	}
   this.binder = new Binder(bindCfg);
 
   this.inputter = {};
@@ -78,6 +77,7 @@ XXX.prototype.start = function(callback){
       logger.info("Start this node-net-xxx server OK.");
     }
     else{
+      // do nothing
     }
     callback(err, res);
   });
@@ -283,7 +283,8 @@ XXX.prototype.startGroupOutputListen = function(schema, outputters, callback){
 	var self = this;
 	var one_ok = false;
 	async.each( outputters, function(outputter, cb){
-		if ( outputter==="self" ) outputter = self.binder.getSelfInputter(schema);
+		if ( outputter==="self" ) 
+      outputter = self.binder.getSelfInputter(schema);
 		var info = outputter.trim().split(':');
 		var tpt = new Outputter(schema, info[0], info[1], "LISTEN");
 		tpt.start(dataHandler, function(e, r){
