@@ -1,23 +1,30 @@
 #!/usr/bin/env node
-var colors = require('colors');
-var xxx = require('./xxx.js');
+"use strict";
+const logger = require('./utils/logger.js');
+const xxx = require('./xxx.js');
 
-//var x = new xxx();
-//var x = new xxx('./config/bind.json');
-var x = new xxx('./config/bind.json', './config/log4js.json');
-x.start(function(error, result){
-  var logger = require('./utils/logger.js');
-  if ( error ){
-    logger.error( JSON.stringify(result).red );
+logger.create('./config/log4js.json', function(e, r){
+  if (e){
+    console.error("Logger error, could not start server: " + e + "," + r);
   }
   else{
-    logger.info( JSON.stringify(result).green );
+    //let x = new xxx();
+    //let x = new xxx('./config/bind.json');
+    let x = new xxx('./config/bind.json');
+    x.start(function(error, result){
+      if ( error ){
+        logger.error( JSON.stringify(result).red );
+      }
+      else{
+        logger.info( JSON.stringify(result).green );
+      }
+    });
   }
 });
 
 process.on('uncaughtException', function (error) {
-  var logger = require('./utils/logger.js');
-  var msg = ' Caught exception: ' + error.stack;
+  let logger = require('./utils/logger.js');
+  let msg = ' Caught exception: ' + error.stack;
   logger.error(msg.red);
 });
 

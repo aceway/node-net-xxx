@@ -1,77 +1,124 @@
 'use strict';
 var fs = require("fs");
-var colors = require('colors');
+var path = require('path');
+//var colors = require('colors');
 var log4js = require('log4js');
 
 Date.prototype.format = function(fmt){
-	if (typeof fmt !== 'string'  || fmt.length < 2) {
-		fmt = "yyyy-MM-dd hh:mm:ss";
-	}
-  var o = {
-  	"M+" : this.getMonth()+1, //month
+  if (typeof fmt !== 'string'  || fmt.length < 2) {
+    fmt = "yyyy-MM-dd hh:mm:ss";
+  }
+  let o = {
+    "M+" : this.getMonth()+1, //month
     "d+" : this.getDate(), //day
     "h+" : this.getHours(), //hour
     "m+" : this.getMinutes(), //minute
     "s+" : this.getSeconds(), //second
     "q+" : Math.floor((this.getMonth()+3)/3), //quarter
     "S" : this.getMilliseconds() //millisecond
-  }
+  };
   if(/(y+)/.test(fmt)) 
     fmt=fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - 
-										RegExp.$1.length));
-  for(var k in o)
+                    RegExp.$1.length));
+  for(let k in o)
     if(new RegExp("("+ k +")").test(fmt))
-      fmt = fmt.replace(RegExp.$1, RegExp.$1.length==1 ? 
-											  o[k] : ("00"+ o[k]).substr((""+ o[k]).length));
+      fmt = fmt.replace(RegExp.$1, RegExp.$1.length===1 ? 
+                        o[k] : ("00"+ o[k]).substr((""+ o[k]).length));
   return fmt;
-}
-var Logger = {};
-
-Logger.create = function(optionsConfig) {
-	this.prepare_();
-	this.option = require(optionsConfig);
-	this.init();
+};
+let Logger = {
+  option:{}, 
+  pid: process.pid,
+  log_dir:"", 
+  escape_trace: false,
+  escape_debug: false,
+  escape_info:  false,
+  escape_warn:  false,
+  escape_error: false,
+  escape_fatal: false
 };
 
-Logger.prepare_ = function() {
-	var tmObj = new Date();
-  var dirPath = process.cwd() + "/logs/";
-  if( !fs.existsSync(dirPath) ){
-		// log4js 里配置的 pattern 和 filename 是否需要动态调整 ? 待测
-		//console.log("Make the new dir:".red + dirPath);
-    fs.mkdirSync(dirPath);
-  	dirPath = process.cwd() + "/logs/" + tmObj.format("yyyy-MM-dd");
-  	if( !fs.existsSync(dirPath) ){
-			//console.log("Make the new dir:".red + dirPath);
-  	  fs.mkdirSync(dirPath);
-  	}
-		else{
-			//console.log("The dir has exist:".green + dirPath);
-		}
+Logger.create = function(logCfg, callback) {
+  if ( typeof logCfg === 'string' && logCfg.length > 0){
+    if ( ! path.isAbsolute(logCfg) ){
+      logCfg = path.join(process.cwd(), logCfg);
+    }
   }
-	else{
-		//console.log("The dir has exist:".green + dirPath);
-  	dirPath = process.cwd() + "/logs/" + tmObj.format("yyyy-MM-dd");
-  	if( !fs.existsSync(dirPath) ){
-			//console.log("Make the new dir:".red + dirPath);
-  	  fs.mkdirSync(dirPath);
-  	}
-		else{
-			//console.log("The dir has exist:".green + dirPath);
-		}
-	}
-}
+  else{
+    logCfg = path.join(process.cwd(), "./config/log4js.json");                     
+  }
+  try{
+    fs.accessSync(logCfg, fs.R_OK);                                                
+  }
+  catch(e){
+    let tip = "Access log4js config failed: " + e;
+    console.error(tip);
+    //process.exit(1);
+    return callback(-1, tip);
+  }
+  let self = this;
+  console.info("[pid:"+self.pid+"]"+"Going to start server with log config: " + logCfg);
+  self._prepare(function(error, result){
+    self.option = require(logCfg);
+    self.init(function(err, res){
+      callback(err, res);
+    });
+  });
+};
 
-Logger.init = function () {
-	var self = Logger;
+Logger._prepare = function(callback) {
+  let self = Logger;
+  try{
+    let dir = new Date().format("yyyy-MM-dd");
+    if (dir === self.log_dir){
+      return callback(null, "Logger._prepare OK");
+    }
+
+    let fullPath = process.cwd() + "/logs/";
+    if( !fs.existsSync(fullPath) ){
+      //console.log("Make the new dir:".red + fullPath);
+      fs.mkdirSync(fullPath);
+      fullPath = process.cwd() + "/logs/" + dir;
+      if( !fs.existsSync(fullPath) ){
+        //console.log("Make the new dir:".red + fullPath);
+        fs.mkdirSync(fullPath);
+      }
+      else{
+        //console.log("The dir has exist:".green + fullPath);
+      }
+      self.log_dir = dir;
+    }
+    else{
+      //console.log("The dir has exist:".green + fullPath);
+      fullPath = process.cwd() + "/logs/" + dir;
+      if( !fs.existsSync(fullPath) ){
+        //console.log("Make the new dir:".red + fullPath);
+        fs.mkdirSync(fullPath);
+      }
+      else{
+        //console.log("The dir has exist:".green + fullPath);
+      }
+      self.log_dir = dir;
+    }
+  }
+  catch(e){
+    console.warn("Logger._prepare throw exception:" + e);
+  }
+  callback(null, "Logger._prepare OK. new date dir.");
+};
+
+Logger.init = function (callback) {
+  let self = Logger;
   log4js.configure(self.option);
+
+  
 
   // 终端调试输出
   self.logConsole = log4js.getLogger('console');
 
   // 所有到文件的日志汇总在一个文件里，便于调试
   if ( self.option.allInOne === true ){
-      self.logAll_ = log4js.getLogger('logAll');
+    self.logAll_ = log4js.getLogger('logAll');
   }
 
   // 处理流程节点跟踪日志，比如收发协议记录
@@ -91,82 +138,268 @@ Logger.init = function () {
 
   // 非逻辑层错误信息，输出log后需要终止进程
   self.logFatal = log4js.getLogger('logFatal');
+
+  if (log4js.levels && log4js.levels.config && 
+      typeof log4js.levels.getLevel === 'function'){
+    let cfg = log4js.levels.config['[all]'];
+    let lvl = log4js.levels.getLevel(cfg).level;
+    //console.error(lvl);
+    //console.error(log4js.levels.getLevel("ALL").level);
+    //console.error(log4js.levels.getLevel("TRACE").level);
+    //console.error(log4js.levels.getLevel("DEBUG").level);
+    //console.error(log4js.levels.getLevel("INFO").level);
+    //console.error(log4js.levels.getLevel("WARN").level);
+    //console.error(log4js.levels.getLevel("ERROR").level);
+    //console.error(log4js.levels.getLevel("FATAL").level);
+    if (cfg && lvl){
+      console.info("Got cfg logger level: " + cfg + " - " + lvl);
+      if ( lvl === log4js.levels.getLevel("ALL").level){
+        self.escape_trace = false;
+        self.escape_debug = false;
+        self.escape_info  = false;
+        self.escape_warn  = false;
+        self.escape_error = false;
+        self.escape_fatal = false;
+      }
+      else if ( lvl >= log4js.levels.getLevel("TRACE").level){
+        self.escape_trace = false;
+        self.escape_debug = false;
+        self.escape_info  = false;
+        self.escape_warn  = false;
+        self.escape_error = false;
+        self.escape_fatal = false;
+      }
+      else if ( lvl >= log4js.levels.getLevel("DEBUG").level){
+        self.escape_trace = true;
+        self.escape_debug = false;
+        self.escape_info  = false;
+        self.escape_warn  = false;
+        self.escape_error = false;
+        self.escape_fatal = false;
+      }
+      else if ( lvl >= log4js.levels.getLevel("INFO").level){
+        self.escape_trace = true;
+        self.escape_debug = true;
+        self.escape_info  = false;
+        self.escape_warn  = false;
+        self.escape_error = false;
+        self.escape_fatal = false;
+      }
+      else if ( lvl >= log4js.levels.getLevel("WARN").level){
+        self.escape_trace = true;
+        self.escape_debug = true;
+        self.escape_info  = true;
+        self.escape_warn  = false;
+        self.escape_error = false;
+        self.escape_fatal = false;
+      }
+      else if ( lvl >= log4js.levels.getLevel("ERROR").level){
+        self.escape_trace = true;
+        self.escape_debug = true;
+        self.escape_info  = true;
+        self.escape_warn  = false;
+        self.escape_error = false;
+        self.escape_fatal = false;
+      }
+      else{
+        self.escape_trace = true;
+        self.escape_debug = true;
+        self.escape_info  = true;
+        self.escape_warn  = false;
+        self.escape_error = false;
+        self.escape_fatal = false;
+      }
+    }
+  }
+  else if (self.option && self.option.levels && self.option.levels["[all]"]){
+    let lvl = self.option.levels["[all]"];
+    console.info("Got cfg logger level: " + lvl );
+    switch (lvl){
+      case "ALL":
+        self.escape_trace = false;
+        self.escape_debug = false;
+        self.escape_info  = false;
+        self.escape_warn  = false;
+        self.escape_error = false;
+        self.escape_fatal = false;
+        break;
+      case "TRACE":
+        self.escape_trace = true;
+        self.escape_debug = false;
+        self.escape_info  = false;
+        self.escape_warn  = false;
+        self.escape_error = false;
+        self.escape_fatal = false;
+        break;
+      case "DEBUG":
+        self.escape_trace = true;
+        self.escape_debug = true;
+        self.escape_info  = false;
+        self.escape_warn  = false;
+        self.escape_error = false;
+        self.escape_fatal = false;
+        break;
+      case "INFO":
+        self.escape_trace = true;
+        self.escape_debug = true;
+        self.escape_info  = true;
+        self.escape_warn  = false;
+        self.escape_error = false;
+        self.escape_fatal = false;
+        break;
+      case "WARN":
+        self.escape_trace = true;
+        self.escape_debug = true;
+        self.escape_info  = true;
+        self.escape_warn  = false;
+        self.escape_error = false;
+        self.escape_fatal = false;
+        break;
+      case "FATAL":
+        self.escape_trace = true;
+        self.escape_debug = true;
+        self.escape_info  = true;
+        self.escape_warn  = false;
+        self.escape_error = false;
+        self.escape_fatal = false;
+        break;
+      default:
+        self.escape_trace = true;
+        self.escape_debug = true;
+        self.escape_info  = false;
+        self.escape_warn  = false;
+        self.escape_error = false;
+        self.escape_fatal = false;
+        break;
+    }
+  }
+  else{
+    console.info("Use default logger level: " + lvl );
+    self.escape_trace = true;
+    self.escape_debug = true;
+    self.escape_info  = false;
+    self.escape_warn  = false;
+    self.escape_error = false;
+    self.escape_fatal = false;
+  }
+
+  callback(null, "Logger.init OK");
 };
 
 Logger.console = function (msg) {
-	var self = Logger;
-  if (typeof self.logConsole === 'undefined') {
-    return ;
-  }
-  self.logConsole.trace(msg);
-}
+  let self = Logger;
+  self._prepare(function(){
+    msg = "[pid:"+self.pid+"]" + msg;
+    if (typeof self.logConsole === 'undefined') {
+      console.log(msg);
+    }
+    else{
+      self.logConsole.trace(msg);
+    }
+  });
+};
 
 Logger.trace = function (msg) {
-	var self = Logger;
-  self.logConsole.trace(msg);
-  self.logAll_.trace(msg);
+  let self = Logger;
+  if (self.escape_trace) return;
 
-  if (typeof self.logTrace === 'undefined') {
-    return ;
-  }
-  self.logTrace.trace(msg);
-}
+  self._prepare(function(){
+    self.logConsole.trace(msg);
+    if (self.logAll_ && self.logAll_.trace) self.logAll_.trace(msg);
+
+    if (typeof self.logTrace === 'undefined') {
+      console.log(msg);
+    }
+    else{
+      self.logTrace.trace(msg);
+    }
+  });
+};
 
 Logger.debug = function (msg) {
-	var self = Logger;
-  self.logConsole.debug(msg);
-  self.logAll_.debug(msg);
+  let self = Logger;
+  if (self.escape_debug) return;
 
-  if (typeof self.logDebug === 'undefined') {
-    return ; 
-  }
-  self.logDebug.debug(msg);
-}
+  self._prepare(function(){
+    self.logConsole.debug(msg);
+    if (self.logAll_ && self.logAll_.debug) self.logAll_.debug(msg);
+
+    if (typeof self.logDebug === 'undefined') {
+      console.log(msg);
+    }
+    else{
+      self.logDebug.debug(msg);
+    }
+  });
+};
 
 Logger.info = function (msg) {
-	var self = Logger;
-  self.logConsole.info(msg);
-  self.logAll_.info(msg);
+  let self = Logger;
+  if (self.escape_info) return;
 
-  if (typeof self.logInfo === 'undefined') {
-    return ;
-  }
-  self.logInfo.info(msg);
-}
+  self._prepare(function(){
+    self.logConsole.info(msg);
+    if (self.logAll_ && self.logAll_.info) self.logAll_.info(msg);
+
+    if (typeof self.logInfo === 'undefined') {
+      console.info(msg);
+    }
+    else{
+      self.logInfo.info(msg);
+    }
+  });
+};
 
 Logger.warn = function (msg) {
-	var self = Logger;
-  self.logConsole.warn(msg);
-  self.logAll_.warn(msg);
+  let self = Logger;
+  if (self.escape_warn) return;
 
-  if (typeof self.logWarn === 'undefined') {
-    return ;
-  }
-  self.logWarn.warn(msg);
-}
+  self._prepare(function(){
+    self.logConsole.warn(msg);
+    if (self.logAll_ && self.logAll_.warn) self.logAll_.warn(msg);
+
+    if (typeof self.logWarn === 'undefined') {
+      console.warn(msg);
+    }
+    else{
+      self.logWarn.warn(msg);
+    }
+  });
+};
 
 Logger.error = function (msg) {
-	var self = Logger;
-  self.logConsole.error(msg);
-  self.logAll_.error(msg);
+  let self = Logger;
+  if (self.escape_error) return;
 
-  if (typeof self.logError === 'undefined') {
-    return ;
-  }
-  self.logError.error(msg);
-}
+  self._prepare(function(){
+    self.logConsole.error("[pid:"+self.pid+"]"+msg);
+    if (self.logAll_ && self.logAll_.error) self.logAll_.error("[pid:"+self.pid+"]"+msg);
+
+    if (typeof self.logError === 'undefined') {
+      console.error("[pid:"+self.pid+"]"+msg);
+    }
+    else{
+      self.logError.error("[pid:"+self.pid+"]"+msg);
+    }
+  });
+};
 
 Logger.fatal = function (msg) {
-	var self = Logger;
-  self.logConsole.fatal(msg);
-  self.logAll_.fatal(msg);
+  let self = Logger;
+  if (self.escape_fatal) return;
 
-  if (typeof self.logFatal === 'undefined') {
-    return ;
-  }
-  self.logFatal.fatal(msg);
-	//process.exit(-1);
-	log4js.shutdown(function() { process.exit(-1); });
-}
+  self._prepare(function(){
+    self.logConsole.fatal("[pid:"+self.pid+"]"+msg);
+    if (self.logAll_ && self.logAll_.fatal) self.logAll_.fatal("[pid:"+self.pid+"]"+msg);
+
+    if (typeof self.logFatal === 'undefined') {
+      console.error("[pid:"+self.pid+"]"+msg);
+    }
+    else{
+      self.logFatal.fatal("[pid:"+self.pid+"]"+msg);
+    }
+    log4js.shutdown(function() { process.exit(-1); });
+  });
+};
 
 module.exports = Logger;

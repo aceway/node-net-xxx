@@ -12,24 +12,7 @@ var Monitor = require('./parts/monitor.js');
 
 var dataHandler = require('./processor/data_handler.js');
 
-var XXX = function(bindCfg, logCfg) {
-	if ( typeof logCfg === 'string' && logCfg.length > 0){
-		if ( ! path.isAbsolute(logCfg) ){
-			logCfg = path.join(process.cwd(), logCfg);
-		}
-	}
-	else{
-		logCfg = path.join(process.cwd(), "./config/log4js.json");
-	}
-	try{
-		fs.accessSync(logCfg, fs.R_OK);
-	}
-	catch(e){
-		console.error("Access log4js config failed:" + e);
-		process.exit(1);
-	}
-	logger.create(logCfg);
-
+var XXX = function(bindCfg) {
 	if ( typeof bindCfg === 'string' && bindCfg.length > 0){
 		if ( ! path.isAbsolute(bindCfg) ){
 			bindCfg = path.join(process.cwd(), bindCfg);
@@ -52,7 +35,7 @@ var XXX = function(bindCfg, logCfg) {
   this.outputter_listen = {};
   this.outputter_connect = {};
   this.monitor = {};
-  logger.info("XXX(" + bindCfg +", " + logCfg + ")");
+  logger.info("XXX(" + bindCfg + ")");
 };
 
 XXX.prototype.start = function(callback){
