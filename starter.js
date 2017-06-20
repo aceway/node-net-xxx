@@ -5,18 +5,17 @@ const xxx = require('./xxx.js');
 
 logger.create('./config/log4js.json', function(e, r){
   if (e){
-    console.error("Logger error, could not start server: " + e + "," + r);
+    console.error("Logger error, could not start server: " + 
+                  e + ( r ? ","+r : ""));
   }
   else{
-    //let x = new xxx();
-    //let x = new xxx('./config/bind.json');
     let x = new xxx('./config/bind.json');
     x.start(function(error, result){
       if ( error ){
-        logger.error( JSON.stringify(result).red );
+        logger.error(error + JSON.stringify(result));
       }
       else{
-        logger.info( JSON.stringify(result).green );
+        logger.info(JSON.stringify(result));
       }
     });
   }
@@ -24,7 +23,6 @@ logger.create('./config/log4js.json', function(e, r){
 
 process.on('uncaughtException', function (error) {
   let logger = require('./utils/logger.js');
-  let msg = ' Caught exception: ' + error.stack;
-  logger.error(msg.red);
+  logger.error(' Caught exception: ' + error + ',' + error.stack);
 });
 
