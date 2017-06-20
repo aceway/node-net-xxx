@@ -1,18 +1,17 @@
 'use strict';
-var fs = require('fs');
-var path = require('path');
-var async = require('async');
+const fs = require('fs');
+const path = require('path');
+const async = require('async');
 
-var logger = require('./utils/logger.js');
-var Binder = require('./utils/binder.js');
+const logger = require('./utils/logger.js');
+const Binder = require('./utils/binder.js');
 
-var Inputter = require('./parts/inputter.js');
-var Outputter = require('./parts/outputter.js');
-var Monitor = require('./parts/monitor.js');
+const Inputter = require('./parts/inputter.js');
+const Outputter = require('./parts/outputter.js');
+const Monitor = require('./parts/monitor.js');
+const dataHandler = require('./processor/data_handler.js');
 
-var dataHandler = require('./processor/data_handler.js');
-
-var XXX = function(bindCfg) {
+let XXX = function(bindCfg) {
 	if ( typeof bindCfg === 'string' && bindCfg.length > 0){
 		if ( ! path.isAbsolute(bindCfg) ){
 			bindCfg = path.join(process.cwd(), bindCfg);
@@ -39,7 +38,7 @@ var XXX = function(bindCfg) {
 };
 
 XXX.prototype.start = function(callback){
-  var self = this;
+  let self = this;
   async.series([
     function(cb){
       self.binder.prepareCfg(cb);
@@ -59,9 +58,6 @@ XXX.prototype.start = function(callback){
     if ( ! err ){
       logger.info("Start this node-net-xxx server OK.");
     }
-    else{
-      // do nothing
-    }
     callback(err, res);
   });
 };
@@ -69,7 +65,7 @@ XXX.prototype.start = function(callback){
 // inputter, outputter and monitor must be all ok, then OK
 XXX.prototype.open_inputter_outputter_monitor = function(callback){
   logger.trace("open_inputter_outputter_monitor(...)");
-  var self = this;
+  let self = this;
 
   async.series({
     inputter: function(cb_outer) {
@@ -108,8 +104,8 @@ XXX.prototype.open_inputter_outputter_monitor = function(callback){
 // any one of inputter ok, then start listen OK
 XXX.prototype.startListen4Inputter = function(callback){
   logger.trace("startListen4Inputter(...)");
-  var self = this;
-  var inputter_ok = false;
+  let self = this;
+  let inputter_ok = false;
   async.each( Object.keys(self.binder.cfg.inputter),
     function(key, cb) {
       self.startOneInputter(key, self.binder.cfg.inputter[key], function(e, r){
@@ -138,8 +134,8 @@ XXX.prototype.startListen4Inputter = function(callback){
 // any one of monitor ok, then start listen OK
 XXX.prototype.startListen4Monitor = function(callback){
   logger.trace("startListen4Monitor(...)");
-  var self = this;
-  var monitor_ok = false;
+  let self = this;
+  let monitor_ok = false;
   async.each( Object.keys(self.binder.cfg.monitor),
     function(key, cb) {
       self.startOneMonitor(key, self.binder.cfg.monitor[key], function(e, r){
@@ -168,8 +164,8 @@ XXX.prototype.startListen4Monitor = function(callback){
 // any one of outputter listen ok, then start listen OK
 XXX.prototype.startListen4Output= function( callback ){
   logger.trace("startListen4Output(...)");
-  var self = this;
-  var outputter_listen = false;
+  let self = this;
+  let outputter_listen = false;
   async.each( Object.keys(self.binder.cfg.outputter_listen),
     function(key, cb) {
       //logger.debug("OUTPUT listen: " + key);
@@ -202,8 +198,8 @@ XXX.prototype.startListen4Output= function( callback ){
 // any one of outputter Connect ok, then start listen OK
 XXX.prototype.startConnect4OutputConnect = function( callback ){
   logger.trace("startConnect4OutputConnect(...)");
-  var self = this;
-  var outputter_connect = false;
+  let self = this;
+  let outputter_connect = false;
   async.each( Object.keys(self.binder.cfg.outputter_connect),
     function(key, cb) {
       //logger.debug("OUTPUT connect: " + key);
@@ -236,10 +232,10 @@ XXX.prototype.startConnect4OutputConnect = function( callback ){
 
 XXX.prototype.startOneInputter = function(schema, inputter, callback) {
   //logger.trace("startOneInputter(...) => " + inputter);
-	var self = this;
-	var info = inputter.trim().split(':');
-	var response = self.binder.isOutputterSelf(schema);
-	var npt = new Inputter(schema, info[0], info[1], response);
+	let self = this;
+	let info = inputter.trim().split(':');
+	let response = self.binder.isOutputterSelf(schema);
+	let npt = new Inputter(schema, info[0], info[1], response);
 	npt.start(dataHandler, function(err, result){
 		if ( ! err ){
 			self.inputter[inputter.trim()] = npt;
@@ -250,9 +246,9 @@ XXX.prototype.startOneInputter = function(schema, inputter, callback) {
 
 XXX.prototype.startOneMonitor = function(schema, monitor, callback) {
   //logger.trace("startOneMonitor(...) => " + monitor);
-	var self = this;
-	var info = monitor.trim().split(':');
-	var mnt = new Monitor(schema, info[0], info[1]);
+	let self = this;
+	let info = monitor.trim().split(':');
+	let mnt = new Monitor(schema, info[0], info[1]);
 	mnt.start(dataHandler, function(err, result){
 		if ( ! err ){
 			self.monitor[monitor.trim()] = mnt;
@@ -263,19 +259,18 @@ XXX.prototype.startOneMonitor = function(schema, monitor, callback) {
 
 XXX.prototype.startGroupOutputListen = function(schema, outputters, callback){
   //logger.trace("startGroupOutputListen(...) => " + outputters);
-	var self = this;
-	var one_ok = false;
+	let self = this;
+	let one_ok = false;
 	async.each( outputters, function(outputter, cb){
-		if ( outputter==="self" ) 
+		if ( outputter==="self" ) {
       outputter = self.binder.getSelfInputter(schema);
-		var info = outputter.trim().split(':');
-		var tpt = new Outputter(schema, info[0], info[1], "LISTEN");
+    }
+		let info = outputter.trim().split(':');
+		let tpt = new Outputter(schema, info[0], info[1], "LISTEN");
 		tpt.start(dataHandler, function(e, r){
 			if ( ! e ){
 				self.outputter_listen[outputter.trim()] = tpt;
 				one_ok = true;
-			}
-			else{
 			}
 			cb(null, r);
 		});
@@ -291,18 +286,18 @@ XXX.prototype.startGroupOutputListen = function(schema, outputters, callback){
 
 XXX.prototype.startGroupOutputConnect = function(schema, outputters, callback){
   //logger.trace("startGroupOutputConnect(...) => " + outputters);
-	var self = this;
-	var one_ok = false;
+	let self = this;
+	let one_ok = false;
 	async.each( outputters, function(outputter, cb){
-		if ( outputter==="self" ) outputter = self.binder.getSelfInputter(schema);
-		var info = outputter.trim().split(':');
-		var tpt = new Outputter(schema, info[0], info[1], "CONNECT");
+		if ( outputter==="self" ) {
+      outputter = self.binder.getSelfInputter(schema);
+    }
+		let info = outputter.trim().split(':');
+		let tpt = new Outputter(schema, info[0], info[1], "CONNECT");
 		tpt.start(dataHandler, function(e, r){
 			if ( ! e ){
 				self.outputter_listen[outputter.trim()] = tpt;
 				one_ok = true;
-			}
-			else {
 			}
 			cb(null, r);
 		});
