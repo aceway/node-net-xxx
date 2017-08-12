@@ -40,9 +40,10 @@ HttpClient.prototype.sendData = function (data, timeout, path, method) {
       path: typeof path === 'string' ? path : '/',
       method: METHODS.indexOf(m) >= 0 ?  m : 'POST',
       headers: {
-        //'Content-Type': 'application/x-www-form-urlencoded',
-        'Content-Type': 'text/json',
-        'Content-Length': Buffer.byteLength(postData)
+        'Content-Type': 'application/x-www-form-urlencoded',
+        //'Content-Length': Buffer.byteLength(postData)
+        //'Content-Type': 'text/json',
+        'Content-Length': postData.length
       },
       timeout: isNaN(timeout) || Number(timeout) < 0 ? 1000 : Number(timeout)
     };
@@ -58,10 +59,10 @@ HttpClient.prototype.sendData = function (data, timeout, path, method) {
         dataChunks.push(chunk);
       });
       res.on('end', () => {
-        logger.trace(`BODY: ${dataChunks}`);
+        logger.trace("BODY: " + dataChunks);
         if (typeof self.handler === 'function'){
           let from = "Get data from connect " +  self.full_name;
-          self.handler(from, dataChunks);
+          self.handler(from, dataChunks.toString());
         }
 
         if (!has_return){
