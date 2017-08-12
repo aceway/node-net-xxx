@@ -17,7 +17,7 @@ class HttpClient {
 
 HttpClient.prototype.connect = function () {
   let self = this;
-  return self.sendData({'data': "node-   t-xxx ping!"},3000,'/node-net-xxx/');
+  return self.sendData({'data': "node-net-xxx ping!"},3000,'/node-net-xxx/', 'get');
           //.then( (e)=>{self.sendData({'data': 'again'});});
 };
 
@@ -40,7 +40,8 @@ HttpClient.prototype.sendData = function (data, timeout, path, method) {
       path: typeof path === 'string' ? path : '/',
       method: METHODS.indexOf(m) >= 0 ?  m : 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        //'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': 'text/json',
         'Content-Length': Buffer.byteLength(postData)
       },
       timeout: isNaN(timeout) || Number(timeout) < 0 ? 1000 : Number(timeout)
@@ -59,7 +60,8 @@ HttpClient.prototype.sendData = function (data, timeout, path, method) {
       res.on('end', () => {
         logger.trace(`BODY: ${dataChunks}`);
         if (typeof self.handler === 'function'){
-          self.handler(dataChunks);
+          let from = "Get data from connect " +  self.full_name;
+          self.handler(from, dataChunks);
         }
 
         if (!has_return){
