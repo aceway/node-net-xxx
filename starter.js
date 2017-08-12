@@ -10,14 +10,7 @@ logger.create('./config/log4js.json', function(e, r){
   }
   else{
     let x = new xxx('./config/bind.js');
-    x.start(function(error, result){
-      if ( error ){
-        logger.error(error + JSON.stringify(result));
-      }
-      else{
-        logger.info(JSON.stringify(result));
-      }
-    });
+    x.start();
   }
 });
 

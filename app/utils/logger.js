@@ -56,7 +56,6 @@ Logger.create = function(logCfg, callback) {
   catch(e){
     let tip = "Access log4js config failed: " + e;
     console.error(tip);
-    //process.exit(1);
     return callback(-1, tip);
   }
   let self = Logger;

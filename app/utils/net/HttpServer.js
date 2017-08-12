@@ -1,92 +1,110 @@
 'use strict';
-var http = require("http");
-var queryStr = require('querystring');
-var urlMgr = require('url');
+const http = require("http");
+const queryStr = require('querystring');
+const urlMgr = require('url');
 
-var logger = require("../logger.js");
+const logger = require("../logger.js");
 
-var HttpServer = function(host, port, response) {
+let HttpServer = function(host, port, handler, response) {
   this.host = host;
   this.port = port;
-  this.rcvCallback = null;
+  this.handler = handler;
 	this.response = !! response;
-}
-
-HttpServer.prototype.regRcvCallback = function ( rcvCallback ) {
-	this.rcvCallback = rcvCallback;
+	this.isRunning = false;
+  this.full_name = "http://" + this.host + ":" + this.port + "/";
 };
 
 HttpServer.prototype.start = function () {
-  var self = this;
-  var httpServer = http.createServer(function (req, res) {
-    var dataChunks = undefined;
-    req.on('data', function (chunk) {
-      if(dataChunks === undefined) dataChunks = [];
-      dataChunks.push(chunk);
+  let self = this;
+  let promiss = new Promise(function(resolve, reject){
+    if (self.isRunning === true){
+      return resolve("OK");
+    }
+    let httpServer = http.createServer(function (req, res) {
+      let dataChunks = null;
+      req.on('data', function (chunk) {
+        if(dataChunks === null) { dataChunks = []; }
+        dataChunks.push(chunk);
+      });
+
+      req.on('end', function () {
+	  		if ( typeof self.handler === 'function' ){
+	  			let queryInfo = urlMgr.parse(req.url);
+	  			let params = queryStr.parse(queryInfo.query);
+	  			if (dataChunks && typeof dataChunks === 'object'){
+	  				dataChunks.url_params = params;
+	  			}
+	  			else{
+	  				dataChunks = params;
+	  			}
+
+	  			self.handler(dataChunks, function(err, outputData){
+      			dataChunks = null;
+	  				if (! err ){
+	  					if ( self.response === true ){
+	  						res.writeHead(200, {'Content-Type': 'text/json'});
+	  						if (typeof outputData === 'string' && outputData.length > 0){
+	  							res.write(outputData);
+	  						}
+	  						else{
+	  							res.write("Nothing response");
+	  						}
+	  						res.end();
+	  					}
+	  					else{
+	  						res.writeHead(200, {'Content-Type': 'text/json'});
+	  						res.end();
+	  					}
+	  				}
+	  				else{
+	  					let tips = "Some thing error:" + err;
+	  					logger.error(tips + ',' + outputData);
+	  					res.writeHead(500, {'Content-Type': 'text/json'});
+	  					res.write(tips);
+	  					res.end();
+	  					logger.warn("HttpServer "+ self.full_name +" error: " + err);
+	  				}
+	  			});
+	  		}
+	  		else{
+	  			logger.warn("The cb:" + self.handler + " is not a function.");
+	  			res.writeHead(200, {'Content-Type': 'text/json'});
+	  			res.end();
+	  		}
+      });
     });
 
-    req.on('end', function () {
-			if ( typeof self.rcvCallback === 'function' ){
-				var queryInfo = urlMgr.parse(req.url);
-				var params = queryStr.parse(queryInfo.query);
-				if (typeof dataChunks === 'object'){
-					dataChunks['url_params'] = params;
-				}
-				else{
-					dataChunks = params;
-				}
-
-				self.rcvCallback(dataChunks, function(err, outputData){
-    			dataChunks = undefined;
-					if (! err ){
-						if ( self.response === true ){
-							res.writeHead(200, {'Content-Type': 'text/json'});
-							if (typeof outputData === 'string' && outputData.length > 0){
-								res.write(outputData);
-							}
-							else{
-								res.write("Nothing response");
-							}
-							res.end();
-						}
-						else{
-							res.writeHead(200, {'Content-Type': 'text/json'});
-							res.end();
-						}
-					}
-					else{
-						var tips = "Some thing error:" + error;
-						logger.error(tips + ',' + outputData);
-						res.writeHead(500, {'Content-Type': 'text/json'});
-						res.write(tips);
-						res.end();
-						logger.warn();
-					}
-				});
-			}
-			else{
-				logger.warn("The cb:" + self.rcvCallback + " is not a function.");
-				res.writeHead(200, {'Content-Type': 'text/json'});
-				res.end();
-			}
+    httpServer.on('listening', function () {
+      let address = httpServer.address();
+      resolve("OK");
+	    logger.info("Listen http on: " + JSON.stringify(address));
+      if ( !self.isRunning ){
+        self.isRunning = true;
+      }
     });
 
-  });
+    httpServer.on('error', function (e) {
+      // TODO: resolve some error as reject
+	  	let tips = "HTTP error:" + e;
+      logger.error(tips);
+      if ( !self.isRunning ){
+        reject(tips);
+      }
+    });
 
-  httpServer.on('error', function (exception, socket) {
-		var tips = "Client " + socket.remoteAddress + ':' + socket.remotePort +
-				" error:" + exception;
-    logger.error(tips);
-  });
+    httpServer.on('close', function (error) {
+	  	let tips = "Http server " + self.host + ':' + self.port + ' close';
+      logger.error(tips);
+      if (self.isRunning === true){
+        self.isRunning = false;
+        return reject("error: " + error );
+      }
+    });
 
-  httpServer.on('close', function () {
-		var tips = "Http server " + self.host + ':' + self.port + ' close';
-    logger.error(tips);
+    httpServer.listen(self.port, self.host);
   });
-
-  httpServer.listen(self.port, self.host);
-	logger.info("Listen on http://" + self.host + ':' + self.port);
-}
+  return promiss;
+};
 
 HttpServer.prototype.__class__ = "HttpServer";
 module.exports = HttpServer;
