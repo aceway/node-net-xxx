@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 "use strict";
-const logger = require('./utils/logger.js');
-const xxx = require('./xxx.js');
+const logger = require('./app/utils/logger.js');
+const xxx = require('./app/xxx.js');
 
 logger.create('./config/log4js.json', function(e, r){
   if (e){
@@ -22,7 +22,7 @@ logger.create('./config/log4js.json', function(e, r){
 });
 
 process.on('uncaughtException', function (error) {
-  let logger = require('./utils/logger.js');
+  let logger = require('./app/utils/logger.js');
   logger.error(' Caught exception: ' + error + ',' + error.stack);
 });
 
