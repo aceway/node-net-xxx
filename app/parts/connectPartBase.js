@@ -16,7 +16,7 @@ class ConnectPartBase extends PartBase{
   }
 }
 
-ConnectPartBase.prototype.start = function () {
+ConnectPartBase.prototype.connect = function () {
 	let self = this;
   let prr = function(resolve, reject){
 		reject(self.host +":"+ self.port + " not supported not, " +
@@ -26,7 +26,7 @@ ConnectPartBase.prototype.start = function () {
   let promiss = null;
 	switch(self.schema){
 	case 'http':
-    promiss = self.startHttp();
+    promiss = self.connectHttp();
 		break;
 	case 'websocket':
     promiss = new Promise(prr);
@@ -47,12 +47,11 @@ ConnectPartBase.prototype.start = function () {
   return promiss;
 };
 
-ConnectPartBase.prototype.startHttp = function () {
+ConnectPartBase.prototype.connectHttp = function () {
   let self = this;
-	logger.trace("Try start ["+self.part_type+"] listen on " + self.full_name);
-  let HttpServer = require('../utils/net/HttpServer.js');
-  let httpSvr = new HttpServer(self.host, self.port, self.handler, true);
-  return httpSvr.start();
+	logger.trace("Try start ["+self.part_type+"] connect to " + self.full_name);
+  let HttpClient = require('../utils/net/HttpClient.js');
+  return new HttpClient(self.host, self.port, self.handler, true).connect();
 };
 
 module.exports = ConnectPartBase;

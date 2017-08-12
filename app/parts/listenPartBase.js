@@ -19,7 +19,7 @@ ListenPartBase.prototype.start = function () {
   let promiss = null;
 	switch(self.schema){
 	case 'http':
-    promiss = self.startHttp();
+    promiss = self.startHttpListen();
 		break;
 	case 'websocket':
     promiss = new Promise(prr);
@@ -40,7 +40,7 @@ ListenPartBase.prototype.start = function () {
   return promiss;
 };
 
-ListenPartBase.prototype.startHttp = function () {
+ListenPartBase.prototype.startHttpListen = function () {
   let self = this;
 	logger.trace("Try start ["+self.part_type+"] listen on " + self.full_name);
   let HttpServer = require('../utils/net/HttpServer.js');

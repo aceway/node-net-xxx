@@ -5,14 +5,16 @@ const urlMgr = require('url');
 
 const logger = require("../logger.js");
 
-let HttpServer = function(host, port, handler, response) {
-  this.host = host;
-  this.port = port;
-  this.handler = handler;
-	this.response = !! response;
-	this.isRunning = false;
-  this.full_name = "http://" + this.host + ":" + this.port + "/";
-};
+class HttpServer {
+  constructor(host, port, handler, response) {
+    this.host = host;
+    this.port = port;
+    this.handler = handler;
+	  this.response = !! response;
+	  this.isRunning = false;
+    this.full_name = "http://" + this.host + ":" + this.port + "/";
+  }
+}
 
 HttpServer.prototype.start = function () {
   let self = this;

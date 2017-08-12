@@ -222,7 +222,7 @@ XXX.prototype.startOneConnectPart = function(partType, partCfg) {
   switch(partType){
   case 'connect_outputter':
     partObj = new ConnectOutputter(partCfg.schema, partCfg.host, partCfg.port, 
-                           dataHandler.dataProcess, partCfg.response).start();
+                           dataHandler.dataProcess, partCfg.response).connect();
     break; 
   default:
     partObj = new Promise((resolve, reject) => {
