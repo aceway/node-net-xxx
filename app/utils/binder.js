@@ -19,8 +19,8 @@ Binder.prototype.prepareCfg = function (callback) {
 	    callback("error", "Bind config inputter error.");
   }
   else{
-    let chckOL = self.checkPartsItems('outputter_listen');
-    let chckCN = self.checkPartsItems('outputter_connect');
+    let chckOL = self.checkPartsItems('listen_outputter');
+    let chckCN = self.checkPartsItems('connect_outputter');
     if (chckOL || chckCN ){
 	    callback(null, "Bind config OK");
     }

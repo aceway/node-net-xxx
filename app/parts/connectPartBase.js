@@ -2,14 +2,21 @@
 const logger = require('../utils/logger.js');
 const PartBase = require('./partBase.js');
 
-class ListenPartBase extends PartBase {
+class ConnectPartBase extends PartBase{
   constructor(part_type, schema, host, port, 
               handler, response) {
-    super('listen', part_type, schema, host, port, handler, response);
+    super('connect', part_type, schema, host, port, handler, response);
+    this.part_type = part_type;
+    this.schema = schema;
+    this.host = host;
+    this.port = port;
+    this.handler = handler;
+    this.response = !!response;
+    this.full_name = schema + "://" + host + ":" + port + "/";
   }
 }
 
-ListenPartBase.prototype.start = function () {
+ConnectPartBase.prototype.start = function () {
 	let self = this;
   let prr = function(resolve, reject){
 		reject(self.host +":"+ self.port + " not supported not, " +
@@ -40,7 +47,7 @@ ListenPartBase.prototype.start = function () {
   return promiss;
 };
 
-ListenPartBase.prototype.startHttp = function () {
+ConnectPartBase.prototype.startHttp = function () {
   let self = this;
 	logger.trace("Try start ["+self.part_type+"] listen on " + self.full_name);
   let HttpServer = require('../utils/net/HttpServer.js');
@@ -48,4 +55,4 @@ ListenPartBase.prototype.startHttp = function () {
   return httpSvr.start();
 };
 
-module.exports = ListenPartBase;
+module.exports = ConnectPartBase;
