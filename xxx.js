@@ -12,62 +12,54 @@ const Monitor = require('./parts/monitor.js');
 const dataHandler = require('./processor/data_handler.js');
 
 let XXX = function(bindCfg) {
+  let self = this;
 	if ( typeof bindCfg === 'string' && bindCfg.length > 0){
 		if ( ! path.isAbsolute(bindCfg) ){
 			bindCfg = path.join(process.cwd(), bindCfg);
 		}
 	}
 	else{
-			bindCfg = path.join(process.cwd(), "./config/bind.json");
+      logger.warn("The bind config is wrong: " + bindCfg);
+      setTimeout(function(){
+        process.exit(1);
+      });
 	}
 	try{
 		fs.accessSync(bindCfg, fs.R_OK);
 	}
 	catch(e){
-		console.error("Access bind config failed.");
-		console.error(e);
-		process.exit(1);
+		logger.error("Access bind config failed: " + e);
+    setTimeout(function(){
+		  process.exit(1);
+    });
 	}
-  this.binder = new Binder(bindCfg);
-
-  this.inputter = {};
-  this.outputter_listen = {};
-  this.outputter_connect = {};
-  this.monitor = {};
-  logger.info("XXX(" + bindCfg + ")");
+  let binder = new Binder(bindCfg);
+  binder.prepareCfg(function(error, data){
+    if (error){
+		  logger.error("The configed bind content error: " + error);
+      setTimeout(function(){
+		    process.exit(1);
+      });
+    }
+    else{
+      logger.trace(data);
+      self.monitor = {};
+      self.binder = binder;
+      self.inputter = {};
+      self.outputter_listen = {};
+      self.outputter_connect = {};
+    }
+  });
 };
 
 XXX.prototype.start = function(callback){
   let self = this;
-  async.series([
-    function(cb){
-      self.binder.prepareCfg(cb);
-    },
-    function(cb){
-      self.open_inputter_outputter_monitor(function(err, res){
-        if (!err && res && res.inputter === true && 
-            res.outputter === true && res.monitor === true){
-          cb(null, res);
-        }
-        else{
-          cb(-1, res);
-        }
-      });
-    }
-  ],function(err, res){
-    if ( ! err ){
-      logger.info("Start this node-net-xxx server OK.");
-    }
-    callback(err, res);
-  });
-};
-
-// inputter, outputter and monitor must be all ok, then OK
-XXX.prototype.open_inputter_outputter_monitor = function(callback){
-  logger.trace("open_inputter_outputter_monitor(...)");
-  let self = this;
 
   async.series({
+    monitor: function(cb_outer){
+			// any one of monitor ok, then start listen OK
+      self.startListen4Monitors(cb_outer);
+    },
     inputter: function(cb_outer) {
 			// any one of inputter ok, then start listen OK
       self.startListen4Inputter(cb_outer);
@@ -91,13 +83,42 @@ XXX.prototype.open_inputter_outputter_monitor = function(callback){
           //cb_outer(-1, false);
         }
       });
-    },
-    monitor: function(cb_outer){
-			// any one of monitor ok, then start listen OK
-      self.startListen4Monitor(cb_outer);
     }
   }, function(err, results){
     callback(err, results);
+  });
+};
+
+// any one of monitor ok, then OK
+XXX.prototype.startListen4Monitors = function(callback){
+  logger.trace("startListen4Monitors(...)");
+  let self = this;
+  let monCfgs = Object.keys(self.binder.cfg.monitor);
+
+
+  let monitor_ok = false;
+  async.each( Object.keys(self.binder.cfg.monitor),
+    function(key, cb) {
+      self.startOneMonitor(key, self.binder.cfg.monitor[key], function(e, r){
+        if ( ! e ){
+          monitor_ok = true;
+          logger.info("Monitor listen on: " + key + " " + r + " OK.");
+        }
+        else{
+          logger.warn("Monitor listen on: " + key + " " + r + " failed.");
+        }
+        cb(null);
+      });
+    },
+    function(err) {
+      if ( monitor_ok ){
+        logger.info("Listen for monitor OK");
+        callback(null, true);
+      }
+      else{
+        logger.error("Listen for monitor FAILED");
+        callback(-1, false);
+      }
   });
 };
 
@@ -126,36 +147,6 @@ XXX.prototype.startListen4Inputter = function(callback){
       }
       else{
         logger.error("Listen for inputter FAILED");
-        callback(-1, false);
-      }
-  });
-};
-
-// any one of monitor ok, then start listen OK
-XXX.prototype.startListen4Monitor = function(callback){
-  logger.trace("startListen4Monitor(...)");
-  let self = this;
-  let monitor_ok = false;
-  async.each( Object.keys(self.binder.cfg.monitor),
-    function(key, cb) {
-      self.startOneMonitor(key, self.binder.cfg.monitor[key], function(e, r){
-        if ( ! e ){
-          monitor_ok = true;
-          logger.info("Monitor listen on: " + key + " " + r + " OK.");
-        }
-        else{
-          logger.warn("Monitor listen on: " + key + " " + r + " failed.");
-        }
-        cb(null);
-      });
-    },
-    function(err) {
-      if ( monitor_ok ){
-        logger.info("Listen for monitor OK");
-        callback(null, true);
-      }
-      else{
-        logger.error("Listen for monitor FAILED");
         callback(-1, false);
       }
   });
@@ -234,7 +225,7 @@ XXX.prototype.startOneInputter = function(schema, inputter, callback) {
   //logger.trace("startOneInputter(...) => " + inputter);
 	let self = this;
 	let info = inputter.trim().split(':');
-	let response = self.binder.isOutputterSelf(schema);
+	let response = true;
 	let npt = new Inputter(schema, info[0], info[1], response);
 	npt.start(dataHandler, function(err, result){
 		if ( ! err ){

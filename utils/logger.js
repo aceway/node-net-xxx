@@ -60,8 +60,10 @@ Logger.create = function(logCfg, callback) {
     return callback(-1, tip);
   }
   let self = Logger;
+  let tm = "[" + new Date().format("yyyy-MM-dd hh:mm:ss") + "]";
   self.log_path = process.cwd() + "/logs/";
-  console.info("[pid:"+self.pid+"]"+"GOING TO START SERVER WITH LOG CONFIG: " + logCfg);
+  console.info(tm + "[pid:"+self.pid+"]"+
+               "GOING TO START SERVER WITH LOG CONFIG: " + logCfg);
   self._prepare(function(error, result){
     self.option = require(logCfg);
     self.init(function(err, res){

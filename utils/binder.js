@@ -1,35 +1,22 @@
-'user strict'
-var logger = require('./logger.js');
+'use strict';
+const logger = require('./logger.js');
 
-var Binder = function(cfgJson){
+let Binder = function(cfgJson){
   this.cfg = require(cfgJson);
 };
 
 Binder.prototype.prepareCfg = function (callback) {
-	var self = this;
-	logger.trace("CHECK BINDER CONFIG DATA.");
-	callback(null, "Binder config ok");
+	let self = this;
+	logger.trace("TODO: CHECK BINDER CONFIG DATA.");
+	callback(null, "Bind config ok");
 };
 
 // outputter self's inputter config.
 // every schema has only one inputter
 Binder.prototype.getSelfInputter = function (schema) {
-	var self = this;
-	return self.cfg.inputter[schema]
+	let self = this;
+	return self.cfg.inputter[schema];
 };
 
-// Is a inputter would output to self connection ?
-// every schema has only one inputter
-Binder.prototype.isOutputterSelf = function(schema) {
-	var self = this;
-	for(var idx in self.cfg.outputter_listen[schema]){
-		if ("self" === self.cfg.outputter_listen[schema][idx]) {
-			return true;
-		}
-	}
-	return false;
-}
 
-//var binder = new Binder('../config/bind.json');
-//module.exports = binder;
 module.exports = Binder;

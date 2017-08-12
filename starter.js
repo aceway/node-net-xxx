@@ -9,7 +9,7 @@ logger.create('./config/log4js.json', function(e, r){
                   e + ( r ? ","+r : ""));
   }
   else{
-    let x = new xxx('./config/bind.json');
+    let x = new xxx('./config/bind.js');
     x.start(function(error, result){
       if ( error ){
         logger.error(error + JSON.stringify(result));
