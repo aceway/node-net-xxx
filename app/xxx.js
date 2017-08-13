@@ -71,10 +71,10 @@ XXX.prototype.start = function(){
 
 // 启动监听类型的部件
 // partType: 部件类型, 对应于 config/bind.js 中的key
-// any_all: 取值 any, all, none, 本函数调用的结果的控制
-//         any 只要一个成功,函数调用结果算成功-Promise.resolve
-//         all 全部成功,函数调用结果才算成功-Promise.resolve
-//         none 无需成功,函数调用结果都算成功-总是Promis.resolve
+// any_all: 取值 any, all, none, 本函数调用内部分结果对最终的控制
+//         any 只要一个部件成功,函数调用结果算成功-Promise.resolve
+//         all 全部部件成功,函数调用结果才算成功-Promise.resolve
+//         none 无需部件成功,函数调用结果都算成功-总是Promis.resolve
 XXX.prototype.startListen4Parts = function(partType, any_all){
   let self = this;
   logger.trace("startListen4Parts(" + partType + ", " + any_all + ")");
