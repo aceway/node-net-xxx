@@ -6,13 +6,6 @@ class ConnectPartBase extends PartBase{
   constructor(part_type, schema, host, port, 
               handler, response) {
     super('connect', part_type, schema, host, port, handler, response);
-    this.part_type = part_type;
-    this.schema = schema;
-    this.host = host;
-    this.port = port;
-    this.handler = handler;
-    this.response = !!response;
-    this.full_name = schema + "://" + host + ":" + port + "/";
   }
 }
 
@@ -49,7 +42,7 @@ ConnectPartBase.prototype.connect = function () {
 
 ConnectPartBase.prototype.connectHttp = function () {
   let self = this;
-	logger.trace("Try start ["+self.part_type+"] connect to " + self.full_name);
+	logger.trace("Try start ["+self.part_type+"] connect to " + self.id);
   let HttpClient = require('../utils/net/HttpClient.js');
   return new HttpClient(self.host, self.port, self.handler, true).connect();
 };

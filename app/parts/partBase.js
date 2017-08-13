@@ -11,9 +11,14 @@ class PartBase {
     this.port = port;
     this.handler = handler;
     this.response = !!response;
-    this.full_name = schema + "://" + host + ":" + port + "/";
+    this.id = schema.toUpperCase().trim() + "://" + host.toUpperCase().trim() +
+               ":" + (""+port).toUpperCase().trim() + "/";
   }
 }
+
+PartBase.prototype.toString = function () {
+  return `[direct:${this.direction}, type:${this.part_type}, id:${this.id}]`;
+};
 
 PartBase.prototype.start = function () {
 	let self = this;
@@ -22,6 +27,11 @@ PartBase.prototype.start = function () {
            "would implement schema:" + self.schema);
   };
 
+};
+
+PartBase.prototype.sendData = function () {
+  logger.warn("This part " + this.id + " has no sendData function now.");
+  return false;
 };
 
 module.exports = PartBase;
