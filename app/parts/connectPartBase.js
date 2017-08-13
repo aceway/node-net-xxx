@@ -48,7 +48,4 @@ ConnectPartBase.prototype.connectHttp = function () {
   return this.net.connect();
 };
 
-ConnectPartBase.prototype.sendData = function () {
-};
-
 module.exports = ConnectPartBase;

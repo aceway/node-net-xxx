@@ -44,8 +44,8 @@ ListenPartBase.prototype.startHttpListen = function () {
   let self = this;
 	logger.trace("Try start ["+self.part_type+"] listen on " + self.id);
   let HttpServer = require('../utils/net/HttpServer.js');
-  let httpSvr = new HttpServer(self.host, self.port, self.handler, true);
-  return httpSvr.start();
+  this.net = new HttpServer(self.host, self.port, self.handler, true);
+  return this.net.start();
 };
 
 module.exports = ListenPartBase;

@@ -22,9 +22,10 @@ const config = {
     //{"tcp"  : "127.0.0.1:9002"},
   ],
   "connect_outputter": [  // 为输出主动连接其它端口
-    {"http" : "localhost:7000"},
-    {"http" : "localhost:8001"},
-    {"http" : "host_ip:9000"},
+    {"http" : "localhost:5000"},
+    //{"http" : "localhost:7000"},  // 测试,配置成环路
+    //{"http" : "localhost:8001"},  // 测试,配置成环路
+    //{"http" : "host_ip:9000"},    // 测试,配置成环路
     //{"ws"   : "127.0.0.1:6003"},
     //{"tcp"  : "127.0.0.1:9003"},
   ]

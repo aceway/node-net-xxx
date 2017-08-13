@@ -133,6 +133,7 @@ PartManager.prototype.sendData2Part = function(ptId, data){
   let ptObj = this.getOnePartId(ptId);
   if (ptObj){
     if (typeof ptObj.sendData === 'function'){
+      logger.debug(ptObj + ".sendData(...)");
       return ptObj.sendData(data);
     }
     else{

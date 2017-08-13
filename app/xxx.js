@@ -265,6 +265,12 @@ XXX.prototype.startOneConnectPart = function(partType, partCfg) {
   case 'connect_outputter':
     partObj = new ConnectOutputter(partCfg.schema, partCfg.host, partCfg.port, 
                            dataHandler.dataProcess, partCfg.response);
+    if (!partMgr.hasPartObj(partObj)){
+      partMgr.addOnePart(partObj);
+    } 
+    else{
+      partObj = partMgr.getPartOneId(partObj.id);
+    }
     break; 
   default:
     logger.error("In startOneConnectPart() found unsurpported partType: " + 

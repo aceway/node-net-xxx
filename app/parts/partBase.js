@@ -31,11 +31,26 @@ PartBase.prototype.start = function () {
 };
 
 PartBase.prototype.sendData = function (data) {
-  if (this.net && typeof this.net.sendData === 'function'){
-    return this.net.sendData(data);
+  let self = this;
+  if (self.net && typeof self.net.sendData === 'function'){
+    let ret = self.net.sendData(data);
+    if (ret instanceof Promise){
+      let rt = false;
+      ret.then((t)=>{
+            rt = true;
+          })
+          .catch(e => {
+            logger.warn(self + ".sendData(...) failed: " + e);
+            rt = false;
+          });
+      return ret;
+    }
+    else{
+      return ret;
+    }
   }
   else{
-    logger.warn("This part " + this.id + " has no sendData function now.");
+    logger.warn("This part " + self.id + " has no sendData function now.");
     return false;
   }
 };
