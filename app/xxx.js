@@ -12,42 +12,47 @@ const ConnectOutputter= require('./parts/connectOutputter.js');
 
 const dataHandler = require('./processor/data_handler.js');
 
-let XXX = function(bindCfg) {
-  let self = this;
-	if ( typeof bindCfg === 'string' && bindCfg.length > 0){
-		if ( ! path.isAbsolute(bindCfg) ){
-			bindCfg = path.join(process.cwd(), bindCfg);
-		}
-	}
-	else{
-      logger.warn("The bind config is wrong: " + bindCfg);
-      process.exit(1);
-	}
-	try{
-		fs.accessSync(bindCfg, fs.R_OK);
-	}
-	catch(e){
-		logger.error("Access bind config failed: " + e);
-		process.exit(1);
-	}
-  let binder = new Binder(bindCfg);
-  binder.prepareCfg(function(error, data){
-    if (error){
-		  logger.error("The configed bind content error: " + data);
-		  process.exit(1);
-    }
-    else{
-      self.binder = binder;
-      self.monitor = {};
-      self.inputter = {};
-      self.listen_outputter = {};
-      self.outputter_connect = {};
-      logger.trace(data);
-    }
-  });
-};
+class XXX {
+  constructor(bindCfg) {
+    let self = this;
+	  if ( typeof bindCfg === 'string' && bindCfg.length > 0){
+	  	if ( ! path.isAbsolute(bindCfg) ){
+	  		bindCfg = path.join(process.cwd(), bindCfg);
+	  	}
+	  }
+	  else{
+        logger.warn("The bind config is wrong: " + bindCfg);
+        process.exit(1);
+	  }
+	  try{
+	  	fs.accessSync(bindCfg, fs.R_OK);
+	  }
+	  catch(e){
+	  	logger.error("Access bind config failed: " + e);
+	  	process.exit(1);
+	  }
+    let binder = new Binder(bindCfg);
+    binder.prepareCfg(function(error, data){
+      if (error){
+	  	  logger.error("The configed bind content error: " + data);
+	  	  process.exit(1);
+      }
+      else{
+        self.binder = binder;
+        self.monitor = {};
+        self.inputter = {};
+        self.listen_outputter = {};
+        self.outputter_connect = {};
+        logger.trace(data);
+      }
+    });
+  }
+}
 
-XXX.prototype.start = function(callback){
+// 启动配置中的各种部件: monitor -> inputter -> outputter
+// monitor 和 inputter 都时监听类型,且必须各至少有一个启动成功,否则程序退出
+// outputter 启动只是尝试,失败与否不影响本服务程序的启动
+XXX.prototype.start = function(){
   let self = this;
   self.startListen4Parts('monitor', 'any')
   .then(
@@ -58,12 +63,18 @@ XXX.prototype.start = function(callback){
     self.startConnect4Parts('connect_outputter', 'none')
   ).catch(
     error => {
-      logger.error("XXX start failed.........");
+      logger.error("XXX start failed: " + error);
       process.exit(1);
     }
   );
 };
 
+// 启动监听类型的部件
+// partType: 部件类型, 对应于 config/bind.js 中的key
+// any_all: 取值 any, all, none, 本函数调用的结果的控制
+//         any 只要一个成功,函数调用结果算成功-Promise.resolve
+//         all 全部成功,函数调用结果才算成功-Promise.resolve
+//         none 无需成功,函数调用结果都算成功-总是Promis.resolve
 XXX.prototype.startListen4Parts = function(partType, any_all){
   let self = this;
   logger.trace("startListen4Parts(" + partType + ", " + any_all + ")");
@@ -125,6 +136,7 @@ XXX.prototype.startListen4Parts = function(partType, any_all){
   return promiss;
 };
 
+// 启动一个监听部件
 XXX.prototype.startOneListenPart = function(partType, partCfg) {
 	let self = this;
   logger.trace(partType + " startOneListenPart(" + partCfg.schema + 
@@ -152,7 +164,7 @@ XXX.prototype.startOneListenPart = function(partType, partCfg) {
   return partObj;
 };
 
-
+// 启动主动去连接类型的部件
 XXX.prototype.startConnect4Parts = function(partType, any_all){
   let self = this;
   logger.trace("startConnect4Parts(" + partType + ", " + any_all + ")");
@@ -214,6 +226,7 @@ XXX.prototype.startConnect4Parts = function(partType, any_all){
   return promiss;
 };
 
+// 启动一个主动连接部件
 XXX.prototype.startOneConnectPart = function(partType, partCfg) {
 	let self = this;
   logger.trace(partType + " startOneConnectPart(" + partCfg.schema + 
