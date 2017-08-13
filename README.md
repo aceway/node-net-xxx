@@ -1,7 +1,7 @@
 # node-net-xxx
 use nodejs to implement a net node server, a net server unit.
 
-## config: bind.json
+## config: bind.js
 moniter: this net server unit listen on for moniter function
 
 inputter: this net server unit listen on for receiving data from
