@@ -1,16 +1,18 @@
 'use strict';
-var logger = require('../utils/logger.js');
+const logger = require('../utils/logger.js');
 
-var dataHandler = function () {
+class dataHandler {
+  constructor () {
+  }
 }
 
-dataHandler.prototype.dataProcess = function(from, data, callback){
-	logger.trace('handler dataProcess data from [' + from + 
-                ']: ' + JSON.stringify(data));
+dataHandler.prototype.dataProcess = function(dataInfo, callback){
+	logger.trace('handler dataProcess data info' + 
+                ']: ' + JSON.stringify(dataInfo));
 	if (typeof callback === 'function') {
-		callback(null, JSON.stringify(data));
+		callback(null, JSON.stringify(dataInfo));
 	}
 };
 
-var handler = new dataHandler();
+let handler = new dataHandler();
 module.exports = handler;

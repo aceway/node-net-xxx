@@ -47,8 +47,8 @@ HttpClient.prototype.sendData = function (data, timeout, path, method) {
 
     let has_return = false;
     let req = http.request(options, (res) => {
-      logger.trace(`STATUS: ${res.statusCode}`);
-      logger.trace(`HEADERS: ${JSON.stringify(res.headers)}`);
+      //logger.trace(`STATUS: ${res.statusCode}`);
+      //logger.trace(`HEADERS: ${JSON.stringify(res.headers)}`);
       res.setEncoding('utf8');
       let dataChunks = null;
       res.on('data', (chunk) => {
@@ -87,10 +87,11 @@ HttpClient.prototype.sendData = function (data, timeout, path, method) {
 	  		}
         dataChunks = null;
 
-        logger.trace("DATA: " + JSON.stringify(retData));
+        //logger.trace("DATA: " + JSON.stringify(retData));
         if (typeof self.handler === 'function'){
-          let from = "Get retData from connect " +  self.full_name;
-          self.handler(from, retData);
+          let from = self.host;
+          let info = {'data': data, 'part': self.full_name, 'from':from};
+          self.handler(info);
         }
 
         if (!has_return){

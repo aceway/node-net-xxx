@@ -1,6 +1,7 @@
 'use strict';
 const http = require("http");
 const queryStr = require('querystring');
+const tools = require("../tools.js");
 const urlMgr = require('url');
 
 const logger = require("../logger.js");
@@ -58,8 +59,9 @@ HttpServer.prototype.start = function () {
             //logger.debug('yyyyyyyyyyyyyyyyyyyyyyyyy');
 	  				data = params;
 	  			}
-          let from = "Get data from listen " + self.full_name;// +  client info.;
-	  			self.handler(from, data, function(err, outputData){
+          let from = tools.getReqIp(req);
+          let info = {'data': data, 'part': self.full_name, 'from':from};
+	  			self.handler(info, function(err, outputData){
             dataChunks = null;
       			data = null;
 	  				if (! err ){
