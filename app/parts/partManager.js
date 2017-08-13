@@ -4,6 +4,7 @@ const PartBase = require('./partBase.js');
 
 class PartManager {
   constructor(){
+    this.up_time = new Date().getTime();
     this.container = {};    // id -> Obj 容器
     this.schema  = {};      // chema -> id => container ref
     this.part_type  = {};   // part_type -> id => container ref
@@ -42,7 +43,7 @@ PartManager.prototype.hasPartObj = function(ptObj){
 };
 
 // 无则添加, 有则直接返回
-PartManager.prototype.addOnaPart = function(ptObj){
+PartManager.prototype.addOnePart = function(ptObj){
   if (ptObj instanceof PartBase && ptObj.id && ptObj.schema && ptObj.part_type){
     if (this.container[ptObj.id] instanceof PartBase) {
       logger.warn("THe part has bin mananger: " + ptObj);
@@ -74,7 +75,7 @@ PartManager.prototype.addOnaPart = function(ptObj){
 };
 
 // 无则添加,有责替换
-PartManager.prototype.updateOnaPart = function(ptObj){
+PartManager.prototype.updateOnePart = function(ptObj){
   if (ptObj instanceof PartBase && ptObj.id && ptObj.schema && ptObj.part_type){
     this.container[ptObj.id] = ptObj;
     if (this.schema[ptObj.schema]){
@@ -100,7 +101,7 @@ PartManager.prototype.updateOnaPart = function(ptObj){
 };
 
 // 通过器件 id 查询器件
-PartManager.prototype.getOnaPartId = function(ptId){
+PartManager.prototype.getOnePartId = function(ptId){
   if (this.hasPartId(ptId)){
     return this.container[ptId];
   }
@@ -110,8 +111,8 @@ PartManager.prototype.getOnaPartId = function(ptId){
 };
 
 // 通过器件 id 删除器件
-PartManager.prototype.delOnaPartId = function(ptId){
-  let ptObj = this.getOnaPartId(ptId);
+PartManager.prototype.delOnePartId = function(ptId){
+  let ptObj = this.getOnePartId(ptId);
   if (ptObj){
     delete this.schema[ptObj.schema][ptId];
     delete this.part_type[ptObj.part_type][ptId];
@@ -125,7 +126,7 @@ PartManager.prototype.delOnaPartId = function(ptId){
 
 // 通过器件 id 给器件连接的对端发送数据
 PartManager.prototype.sendData2Part = function(ptId, data){
-  let ptObj = this.getOnaPartId(ptId);
+  let ptObj = this.getOnePartId(ptId);
   if (ptObj){
     if (typeof ptObj.sendData === 'function'){
       return ptObj.sendData(data);
@@ -234,3 +235,5 @@ PartManager.prototype.sendData2All = function(data){
   }
   return sent;
 };
+
+module.exports = new PartManager();

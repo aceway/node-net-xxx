@@ -5,10 +5,13 @@ const path = require('path');
 const logger = require('./utils/logger.js');
 const Binder = require('./utils/binder.js');
 
+const PartBase = require('./parts/partBase.js');
 const Inputter = require('./parts/inputter.js');
 const Monitor = require('./parts/monitor.js');
 const ListenOutputter= require('./parts/listenOutputter.js');
 const ConnectOutputter= require('./parts/connectOutputter.js');
+
+const partMgr = require('./parts/partManager.js');
 
 const dataHandler = require('./processor/data_handler.js');
 
@@ -136,34 +139,6 @@ XXX.prototype.startListen4Parts = function(partType, any_all){
   return promiss;
 };
 
-// 启动一个监听部件
-XXX.prototype.startOneListenPart = function(partType, partCfg) {
-	let self = this;
-  logger.trace(partType + " startOneListenPart(" + partCfg.schema + 
-               "://"+ partCfg.host + ":" + partCfg.port +"/) ");
-  let partObj = null;
-  switch(partType){
-  case 'monitor':
-    partObj = new Monitor(partCfg.schema, partCfg.host, partCfg.port, 
-                          dataHandler.dataProcess).start();
-    break; 
-  case 'inputter':
-    partObj = new Inputter(partCfg.schema, partCfg.host, partCfg.port, 
-                           dataHandler.dataProcess, partCfg.response).start();
-    break; 
-  case 'listen_outputter':
-    partObj = new ListenOutputter(partCfg.schema, partCfg.host, partCfg.port, 
-                           dataHandler.dataProcess, partCfg.response).start();
-    break; 
-  default:
-    partObj = new Promise((resolve, reject) => {
-      reject("Unsurpported partType: " + partType);
-    });
-    break; 
-  }
-  return partObj;
-};
-
 // 启动主动去连接类型的部件
 XXX.prototype.startConnect4Parts = function(partType, any_all){
   let self = this;
@@ -226,6 +201,60 @@ XXX.prototype.startConnect4Parts = function(partType, any_all){
   return promiss;
 };
 
+// 启动一个监听部件
+XXX.prototype.startOneListenPart = function(partType, partCfg) {
+	let self = this;
+  logger.trace(partType + " startOneListenPart(" + partCfg.schema + 
+               "://"+ partCfg.host + ":" + partCfg.port +"/) ");
+  let partObj = null;
+  switch(partType){
+  case 'monitor':
+    partObj = new Monitor(partCfg.schema, partCfg.host, partCfg.port, 
+                          dataHandler.dataProcess);
+    if (!partMgr.hasPartObj(partObj)){
+      partMgr.addOnePart(partObj);
+    } 
+    else{
+      partObj = partMgr.getPartOneId(partObj.id);
+    }
+    break; 
+  case 'inputter':
+    partObj = new Inputter(partCfg.schema, partCfg.host, partCfg.port, 
+                           dataHandler.dataProcess, partCfg.response);
+    if (!partMgr.hasPartObj(partObj)){
+      partMgr.addOnePart(partObj);
+    } 
+    else{
+      partObj = partMgr.getPartOneId(partObj.id);
+    }
+    break; 
+  case 'listen_outputter':
+    partObj = new ListenOutputter(partCfg.schema, partCfg.host, partCfg.port, 
+                           dataHandler.dataProcess, partCfg.response);
+    if (!partMgr.hasPartObj(partObj)){
+      partMgr.addOnePart(partObj);
+    } 
+    else{
+      partObj = partMgr.getPartOneId(partObj.id);
+    }
+    break; 
+  default:
+    logger.error("In startOneListenPart() found unsurpported partType: " + 
+                  partType);
+    break; 
+  }
+  let promiss = null;
+  if (partObj instanceof PartBase){
+    promiss = partObj.start();
+  }
+  else{
+    promiss = new Promise((resolve, reject) => {
+      reject("Unsurpported partType: " + partType);
+    });
+  }
+  return promiss;
+};
+
 // 启动一个主动连接部件
 XXX.prototype.startOneConnectPart = function(partType, partCfg) {
 	let self = this;
@@ -235,15 +264,23 @@ XXX.prototype.startOneConnectPart = function(partType, partCfg) {
   switch(partType){
   case 'connect_outputter':
     partObj = new ConnectOutputter(partCfg.schema, partCfg.host, partCfg.port, 
-                           dataHandler.dataProcess, partCfg.response).connect();
+                           dataHandler.dataProcess, partCfg.response);
     break; 
   default:
-    partObj = new Promise((resolve, reject) => {
-      reject("Unsurpported partType: " + partType);
-    });
+    logger.error("In startOneConnectPart() found unsurpported partType: " + 
+                  partType);
     break; 
   }
-  return partObj;
+  let promiss = null;
+  if (partObj instanceof PartBase){
+    promiss = partObj.connect();
+  }
+  else{
+    promiss = new Promise((resolve, reject) => {
+      reject("Unsurpported partType: " + partType);
+    });
+  }
+  return promiss;
 };
 
 module.exports = XXX;
