@@ -1,6 +1,5 @@
 'use strict';
 const http = require("http");
-const querystring = require("querystring");
 const util = require("util");
 const logger = require("../logger.js");
 
@@ -17,19 +16,19 @@ class HttpClient {
 
 HttpClient.prototype.connect = function () {
   let self = this;
-  return self.sendData({'data': "node-net-xxx ping!"},3000,'/node-net-xxx/', 'get');
+  return self.sendData({'data':"node-net-xxx ping!"},3000,'/node-net-xxx/', 'post');
           //.then( (e)=>{self.sendData({'data': 'again'});});
 };
 
 HttpClient.prototype.sendData = function (data, timeout, path, method) {
   let self = this;
   let promiss = new Promise((resolve, reject) => {
-		let postData = null;
+		let commitData = null;
     if (typeof data === 'string'){
-		  postData = data;
+		  commitData = data;
     }
     else{
-		  postData = querystring.stringify(data);
+		  commitData = JSON.stringify(data);
     }
     let m = typeof method==='string' ? 
                    method.toLowerCase().trim() : method + "";
@@ -40,10 +39,8 @@ HttpClient.prototype.sendData = function (data, timeout, path, method) {
       path: typeof path === 'string' ? path : '/',
       method: METHODS.indexOf(m) >= 0 ?  m : 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        //'Content-Length': Buffer.byteLength(postData)
-        //'Content-Type': 'text/json',
-        'Content-Length': postData.length
+        'Content-Type': 'application/json;charset=utf-8',
+        'Content-Length': commitData.length
       },
       timeout: isNaN(timeout) || Number(timeout) < 0 ? 1000 : Number(timeout)
     };
@@ -59,10 +56,41 @@ HttpClient.prototype.sendData = function (data, timeout, path, method) {
         dataChunks.push(chunk);
       });
       res.on('end', () => {
-        logger.trace("BODY: " + dataChunks);
+        let retData = null;
+	  		if (dataChunks && dataChunks.length > 0 && typeof dataChunks[0] === typeof Buffer){
+          //logger.debug('zzzzzzzzzzzzzzzzzzzz');
+          let str = Buffer.concat(dataChunks).toString('utf8');
+          try{
+            retData = JSON.parse(str);
+          }
+          catch(e){
+            retData = {};
+            retData.error = e + "";
+            retData.desc = str;
+          }
+	  		}
+	  		else if (dataChunks && dataChunks.length > 0 && typeof dataChunks[0] === 'string'){
+          //logger.debug('xxxxxxxxxxxxxxxxxxxxxxx');
+          let str = dataChunks.toString('utf8');
+          try{
+            retData = JSON.parse(str);
+          }
+          catch(e){
+            retData = {};
+            retData.error = e + "";
+            retData.desc = str;
+          }
+	  		}
+	  		else{
+          //logger.debug('yyyyyyyyyyyyyyyyyyyyyyyyy');
+	  			retData = [];
+	  		}
+        dataChunks = null;
+
+        logger.trace("DATA: " + JSON.stringify(retData));
         if (typeof self.handler === 'function'){
-          let from = "Get data from connect " +  self.full_name;
-          self.handler(from, dataChunks.toString());
+          let from = "Get retData from connect " +  self.full_name;
+          self.handler(from, retData);
         }
 
         if (!has_return){
@@ -81,7 +109,7 @@ HttpClient.prototype.sendData = function (data, timeout, path, method) {
       }
     });
     
-    req.write(postData);
+    req.write(commitData);
     req.end();
   });
   return promiss;

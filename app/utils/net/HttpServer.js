@@ -33,15 +33,35 @@ HttpServer.prototype.start = function () {
 	  		if ( typeof self.handler === 'function' ){
 	  			let queryInfo = urlMgr.parse(req.url);
 	  			let params = queryStr.parse(queryInfo.query);
-	  			if (dataChunks && typeof dataChunks === 'object'){
-	  				dataChunks.url_params = params;
+          let data = null;
+	  			if (dataChunks && dataChunks.length > 0){
+            //logger.debug('xxxxxxxxxxxxxxxxxxxxxxx');
+            let str = Buffer.concat(dataChunks).toString('utf8');
+            try{
+              data = JSON.parse(str);
+            }
+            catch(e){
+              data = {};
+              data.error = e + "";
+              data.desc = str;
+            }
+            let keys = Object.keys(params);
+            let k = null;
+            for(let i=0; i < keys.length; i++){
+              k = keys[i];
+              if (!data.hasOwnProperty(k)){
+                data[k] = params[k];
+              }
+            }
 	  			}
 	  			else{
-	  				dataChunks = params;
+            //logger.debug('yyyyyyyyyyyyyyyyyyyyyyyyy');
+	  				data = params;
 	  			}
           let from = "Get data from listen " + self.full_name;// +  client info.;
-	  			self.handler(from, dataChunks, function(err, outputData){
-      			dataChunks = null;
+	  			self.handler(from, data, function(err, outputData){
+            dataChunks = null;
+      			data = null;
 	  				if (! err ){
 	  					if ( self.response === true ){
 	  						res.writeHead(200, {'Content-Type': 'text/json'});
