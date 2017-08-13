@@ -13,7 +13,7 @@ const ConnectOutputter= require('./parts/connectOutputter.js');
 
 const partMgr = require('./parts/partManager.js');
 
-const dataHandler = require('./processor/data_handler.js');
+const dataHandler = require('./processor/dataHandler.js');
 
 class XXX {
   constructor(bindCfg) {

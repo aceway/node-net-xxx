@@ -44,6 +44,7 @@ PartManager.prototype.hasPartObj = function(ptObj){
 
 // 无则添加, 有则直接返回
 PartManager.prototype.addOnePart = function(ptObj){
+  logger.debug('addOnePart: ' + ptObj);
   if (ptObj instanceof PartBase && ptObj.id && ptObj.schema && ptObj.part_type){
     if (this.container[ptObj.id] instanceof PartBase) {
       logger.warn("THe part has bin mananger: " + ptObj);
@@ -76,6 +77,7 @@ PartManager.prototype.addOnePart = function(ptObj){
 
 // 无则添加,有责替换
 PartManager.prototype.updateOnePart = function(ptObj){
+  logger.debug('updateOnePart: ' + ptObj);
   if (ptObj instanceof PartBase && ptObj.id && ptObj.schema && ptObj.part_type){
     this.container[ptObj.id] = ptObj;
     if (this.schema[ptObj.schema]){
@@ -112,6 +114,7 @@ PartManager.prototype.getOnePartId = function(ptId){
 
 // 通过器件 id 删除器件
 PartManager.prototype.delOnePartId = function(ptId){
+  logger.debug('addOnePart: ' + ptObj);
   let ptObj = this.getOnePartId(ptId);
   if (ptObj){
     delete this.schema[ptObj.schema][ptId];
@@ -126,6 +129,7 @@ PartManager.prototype.delOnePartId = function(ptId){
 
 // 通过器件 id 给器件连接的对端发送数据
 PartManager.prototype.sendData2Part = function(ptId, data){
+  logger.debug('sendData2Part(' + ptId + ", ...)");
   let ptObj = this.getOnePartId(ptId);
   if (ptObj){
     if (typeof ptObj.sendData === 'function'){
@@ -147,6 +151,7 @@ PartManager.prototype.sendData2Part = function(ptId, data){
 // 给一种 schema 的器件对端发送数据
 // schema: http, ws, tcp....
 PartManager.prototype.sendData2Schema = function(schema, data){
+  logger.trace("sendData2Schema(" + schema + ", ...");
   if (this.schema[schema]){
     let sent = false;
     let keys = Object.keys(this.schema[schema]);
@@ -171,6 +176,7 @@ PartManager.prototype.sendData2Schema = function(schema, data){
 // 给一种 part_type 的器件对端发送数据
 // part_type: monitor, inputter, listen_outputter, connect_outputter
 PartManager.prototype.sendData2PartType = function(ptType, data){
+  logger.trace("sendData2PartType(" + ptType + ", ...");
   if (this.part_type[ptType]){
     let sent = false;
     let keys = Object.keys(this.part_type[ptType]);
@@ -194,16 +200,19 @@ PartManager.prototype.sendData2PartType = function(ptType, data){
 
 // 给所有 monitor 器件对端发送数据
 PartManager.prototype.sendData2AllMonitor = function(data){
+  logger.trace("sendData2AllMonitor(...");
   return this.sendData2PartType('monitor', data);
 };
 
 // 给所有 inputter 器件对端发送数据
 PartManager.prototype.sendData2AllMonitor = function(data){
+  logger.trace("sendData2AllMonitor(...");
   return this.sendData2PartType('inputter', data);
 };
 
 // 给所有输出 outputter (xxxx_outputter)器件对端发送数据
 PartManager.prototype.sendData2AllOutputter = function(data){
+  logger.trace("sendData2AllOutputter(...");
   let sent = false;
   let keys = Object.keys(this.part_type);
   let ptType = null;
@@ -222,6 +231,7 @@ PartManager.prototype.sendData2AllOutputter = function(data){
 
 // 给所有器件对端发送数据
 PartManager.prototype.sendData2All = function(data){
+  logger.trace("sendData2All(...");
   let sent = false;
   let keys = Object.keys(this.container);
   let id = null;

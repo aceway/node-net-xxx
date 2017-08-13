@@ -13,6 +13,7 @@ class PartBase {
     this.response = !!response;
     this.id = schema.toUpperCase().trim() + "://" + host.toUpperCase().trim() +
                ":" + (""+port).toUpperCase().trim() + "/";
+    this.net = null;
   }
 }
 
@@ -29,9 +30,14 @@ PartBase.prototype.start = function () {
 
 };
 
-PartBase.prototype.sendData = function () {
-  logger.warn("This part " + this.id + " has no sendData function now.");
-  return false;
+PartBase.prototype.sendData = function (data) {
+  if (this.net && typeof this.net.sendData === 'function'){
+    return this.net.sendData(data);
+  }
+  else{
+    logger.warn("This part " + this.id + " has no sendData function now.");
+    return false;
+  }
 };
 
 module.exports = PartBase;

@@ -44,7 +44,11 @@ ConnectPartBase.prototype.connectHttp = function () {
   let self = this;
 	logger.trace("Try start ["+self.part_type+"] connect to " + self.id);
   let HttpClient = require('../utils/net/HttpClient.js');
-  return new HttpClient(self.host, self.port, self.handler, true).connect();
+  this.net = new HttpClient(self.host, self.port, self.handler, true);
+  return this.net.connect();
+};
+
+ConnectPartBase.prototype.sendData = function () {
 };
 
 module.exports = ConnectPartBase;
