@@ -15,7 +15,6 @@ logger.create('./config/log4js.json', function(e, r){
 });
 
 process.on('uncaughtException', function (error) {
-  let logger = require('./app/utils/logger.js');
   logger.error(' Caught exception: ' + error + ',' + error.stack);
 });
 
