@@ -4,7 +4,8 @@
   "description": "a net server node unit, can use it to make large net server.",
   "main": "app.js",
   "dependencies": {
-    "log4js": "^1.1.1"
+    "log4js": "^1.1.1",
+    "socket.io": "^2.0.3"
   },
   "devDependencies": {},
   "scripts": {
