@@ -6,11 +6,10 @@ const logger = require("../logger.js");
 const METHODS = ['post', 'get'];
 
 class HttpClient {
-  constructor(host, port, handler) {
-    this.host = host;
-    this.port = port;
+  constructor(option, handler) {
+    this.option = option;
     this.handler = handler;
-    this.full_name = "http://" + this.host + ":" + this.port + "/";
+    this.full_name = "http://" + this.option.host + ":" + this.option.port + "/";
   }
 }
 
@@ -32,21 +31,18 @@ HttpClient.prototype.sendData = function (data, timeout, path, method) {
     }
     let m = typeof method==='string' ? 
                    method.toLowerCase().trim() : method + "";
-    const options = {
-      host: self.host,
-      hostname: self.host,
-      port: self.port,
-      path: typeof path === 'string' ? path : '/',
-      method: METHODS.indexOf(m) >= 0 ?  m : 'POST',
-      headers: {
-        'Content-Type': 'application/json;charset=utf-8',
-        'Content-Length': commitData.length
-      },
-      timeout: isNaN(timeout) || Number(timeout) < 0 ? 1000 : Number(timeout)
+    const option = self.option;
+    option.hostname =  self.option.hostname || self.option.host;
+    option.path = typeof path === 'string' ? path : '/';
+    option.method = METHODS.indexOf(m) >= 0 ?  m : 'POST';
+    option.headers = {
+      'Content-Type': 'application/json;charset=utf-8',
+      'Content-Length': commitData.length
     };
+    option.timeout = isNaN(timeout) || Number(timeout) < 0 ? 1000 : Number(timeout);
 
     let has_return = false;
-    let req = http.request(options, (res) => {
+    let req = http.request(option, (res) => {
       //logger.trace(`STATUS: ${res.statusCode}`);
       //logger.trace(`HEADERS: ${JSON.stringify(res.headers)}`);
       res.setEncoding('utf8');
@@ -89,7 +85,7 @@ HttpClient.prototype.sendData = function (data, timeout, path, method) {
 
         //logger.trace("DATA: " + JSON.stringify(retData));
         if (typeof self.handler === 'function'){
-          let from = self.host;
+          let from = self.option.host;
           let info = {'data': data, 'part': self.full_name, 'from':from};
           self.handler(info);
         }

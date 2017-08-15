@@ -7,23 +7,22 @@ const urlMgr = require('url');
 const logger = require("../logger.js");
 
 class HttpServer {
-  constructor(host, port, handler, response) {
-    this.host = host;
-    this.port = port;
+  constructor(option, handler) {
+    this.option = option;
     this.handler = handler;
-	  this.response = !! response;
 	  this.isRunning = false;
-    this.full_name = "http://" + this.host + ":" + this.port + "/";
+    this.full_name = "http://" + this.option.host + ":" + this.option.port + "/";
+    this.httpServer= null;
   }
 }
 
 HttpServer.prototype.start = function () {
   let self = this;
   let promiss = new Promise(function(resolve, reject){
-    if (self.isRunning === true){
+    if (self.httpServer && self.isRunning === true){
       return resolve("OK");
     }
-    let httpServer = http.createServer(function (req, res) {
+    self.httpServer = http.createServer(function (req, res) {
       let dataChunks = null;
       req.on('data', function (chunk) {
         if(dataChunks === null) { dataChunks = []; }
@@ -65,7 +64,7 @@ HttpServer.prototype.start = function () {
             dataChunks = null;
       			data = null;
 	  				if (! err ){
-	  					if ( self.response === true ){
+	  					if ( self.option.response === true ){
 	  						res.writeHead(200, {'Content-Type': 'text/json'});
 	  						if (typeof outputData === 'string' && outputData.length > 0){
 	  							res.write(outputData);
@@ -98,8 +97,8 @@ HttpServer.prototype.start = function () {
       });
     });
 
-    httpServer.on('listening', function () {
-      let address = httpServer.address();
+    self.httpServer.on('listening', function () {
+      let address = self.httpServer.address();
       resolve("OK");
 	    logger.info("Listen http on: " + JSON.stringify(address));
       if ( !self.isRunning ){
@@ -107,7 +106,7 @@ HttpServer.prototype.start = function () {
       }
     });
 
-    httpServer.on('error', function (e) {
+    self.httpServer.on('error', function (e) {
       // TODO: resolve some error as reject
 	  	let tips = "HTTP error:" + e;
       logger.error(tips);
@@ -116,8 +115,8 @@ HttpServer.prototype.start = function () {
       }
     });
 
-    httpServer.on('close', function (error) {
-	  	let tips = "Http server " + self.host + ':' + self.port + ' close';
+    self.httpServer.on('close', function (error) {
+	  	let tips = "Http server " + self.option.host + ':' + self.option.port + ' close';
       logger.error(tips);
       if (self.isRunning === true){
         self.isRunning = false;
@@ -125,10 +124,13 @@ HttpServer.prototype.start = function () {
       }
     });
 
-    httpServer.listen(self.port, self.host);
+    self.httpServer.listen(self.option);
   });
   return promiss;
 };
 
-HttpServer.prototype.__class__ = "HttpServer";
+HttpServer.prototype.sendData = function (data, timeout, path, method) {
+  // HTTP server could not send data lony.
+};
+
 module.exports = HttpServer;

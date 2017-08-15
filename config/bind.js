@@ -4,30 +4,21 @@
 */
 const config = {
   "monitor": [            // 为监控本 node-net-xxx 状况创建的监听端口
-    {"http" : "192.168.1.99:8000"},
-    //{"ws"   : "127.0.0.1:7000"},
-    //{"ws"   : "127.0.0.1:6000"},
-    //{"tcp"  : "127.0.0.1:9000"},
+    {schema: "http", host:"192.168.1.99", port: 2000},
   ],
   "inputter": [           // 为接收外部数据创建的监听端口
-    {"http" : "127.0.0.1:7000"},
-    {"http" : "127.0.0.1:8001"},
-    {"http" : "192.168.1.99:9000"},
-    //{"ws"   : "127.0.0.1:6001"},
-    //{"tcp"  : "127.0.0.1:9001"},
+    {schema: "http", host: "127.0.0.1", port: 3000},
+    {schema: "ws",   host: "127.0.0.1", port: 3001},
   ],
   "listen_outputter": [   // 为输出数据创建的监听端口
-    {"http" : "localhost:6000"},
-    //{"ws"   : "127.0.0.1:6002"},
-    //{"tcp"  : "127.0.0.1:9002"},
+    {schema: "http", host: "localhost", port: 4000},
+    {schema: "ws",   host: "localhost", port: 4001},
   ],
   "connect_outputter": [  // 为输出主动连接其它端口
-    {"http" : "localhost:5000"},
-    //{"http" : "localhost:7000"},  // 测试,配置成环路
-    //{"http" : "localhost:8001"},  // 测试,配置成环路
-    //{"http" : "host_ip:9000"},    // 测试,配置成环路
-    //{"ws"   : "127.0.0.1:6003"},
-    //{"tcp"  : "127.0.0.1:9003"},
+    {schema: "http", host: "localhost", port: 5000},
+    {schema: "ws",   host: "localhost", port: 5001},
+    //{schema: "http", host: "host_ip",   port: 2000},  // 测试,通过配置系统 host 配置成环路
+    //{schema: "http", host: "localhost", port: 3000},  // 测试,配置成环路
   ]
 };
 

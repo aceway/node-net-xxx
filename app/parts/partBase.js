@@ -2,30 +2,28 @@
 const logger = require('../utils/logger.js');
 
 class PartBase {
-  constructor(direction, part_type, schema, host, port, 
-              handler, response) {
+  constructor(direction, part_type, part_cfg, handler) {
     this.direction = direction;
     this.part_type = part_type;
-    this.schema = schema;
-    this.host = host;
-    this.port = port;
-    this.handler = handler;
-    this.response = !!response;
-    this.id = schema.toUpperCase().trim() + "://" + host.toUpperCase().trim() +
-               ":" + (""+port).toUpperCase().trim() + "/";
+    this.part_cfg  = part_cfg;
+    this.handler   = handler;
+    this.id = part_cfg.schema.toUpperCase().trim() + "://" + 
+                part_cfg.host.toUpperCase().trim() +
+                ":" + (""+part_cfg.port).toUpperCase().trim() + "/";
+    this.schema = part_cfg.schema;
     this.net = null;
   }
 }
 
 PartBase.prototype.toString = function () {
-  return `[direct:${this.direction}, type:${this.part_type}, id:${this.id}]`;
+  return `[direct:${this.direction}, part_type:${this.part_type}, id:${this.id}]`;
 };
 
 PartBase.prototype.start = function () {
 	let self = this;
   let prr = function(resolve, reject){
-		reject(self.host +":"+ self.port + " not supported not, " +
-           "would implement schema:" + self.schema);
+		reject(self.part_cfg.host +":"+ self.part_cfg.port + " not supported not, " +
+           "would implement schema:" + self.part_cfg.schema);
   };
 
 };

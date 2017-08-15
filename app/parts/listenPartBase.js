@@ -3,16 +3,15 @@ const logger = require('../utils/logger.js');
 const PartBase = require('./partBase.js');
 
 class ListenPartBase extends PartBase {
-  constructor(part_type, schema, host, port, 
-              handler, response) {
-    super('listen', part_type, schema, host, port, handler, response);
+  constructor(part_type, part_cfg, handler) {
+    super('listen', part_type, part_cfg, handler);
   }
 }
 
 ListenPartBase.prototype.start = function () {
 	let self = this;
   let prr = function(resolve, reject){
-		reject(self.host +":"+ self.port + " not supported not, " +
+		reject(self.part_cfg.host +":"+ self.part_cfg.port + " not supported not, " +
            "would implement schema:" + self.schema);
   };
 
@@ -21,8 +20,8 @@ ListenPartBase.prototype.start = function () {
 	case 'http':
     promiss = self.startHttpListen();
 		break;
-	case 'websocket':
-    promiss = new Promise(prr);
+	case 'ws':
+    promiss = self.startWsListen();
 		break;
 	case 'tcp':
     promiss = new Promise(prr);
@@ -44,7 +43,16 @@ ListenPartBase.prototype.startHttpListen = function () {
   let self = this;
 	logger.trace("Try start ["+self.part_type+"] listen on " + self.id);
   let HttpServer = require('../utils/net/HttpServer.js');
-  this.net = new HttpServer(self.host, self.port, self.handler, true);
+  this.net = new HttpServer(self.part_cfg, self.handler);
+  return this.net.start();
+};
+
+ListenPartBase.prototype.startWsListen = function () {
+  let self = this;
+	logger.trace("Try start ["+self.part_type+"] listen on " + self.id);
+  let WSServer = require('../utils/net/WSServer.js');
+  self.part_cfg.response = true;
+  this.net = new WSServer(self.part_cfg, self.handler);
   return this.net.start();
 };
 

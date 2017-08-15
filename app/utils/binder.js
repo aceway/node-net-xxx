@@ -51,43 +51,25 @@ Binder.prototype.checkPartsItems = function (name) {
 
 Binder.prototype.checkOneItem = function (name, item) {
   let self = this;
-  if (item && typeof item === 'object'){
-    let found_schema = false;
-    let keys = Object.keys(item);
-    let k = null;
-    let v = null;
-    for(let i = 0; i < keys.length; i++){
-      k = keys[i];
-      v = item[k];
-      if (SCHEMA.indexOf(k.toLowerCase().trim()) >= 0){
-        found_schema = true;
-        if (typeof v !== 'string' || v.split(':').length !== 2 ||
-            isNaN(v.split(':')[1]) ){
-          logger.error("Bind config [" + name + 
-                       "] format error: " + JSON.stringify(item));
-          return false;
-        }
-        else if (self.host_port[v.toLowerCase().trim()]){
-          logger.error("Duplicated host and port: " + 
+  if (item && typeof item === 'object' && typeof item.schema === 'string' && 
+      typeof item.host === 'string' && item.port && !isNaN(item.port) ){
+    if (SCHEMA.indexOf(item.schema.toLowerCase().trim()) >= 0){
+      let hp = item.host.toLowerCase().trim() + ":" + item.port;
+      if ( !self.host_port[hp] ){
+        item.schema = item.schema.toLowerCase().trim();
+        self.host_port[hp] = item.schema;
+        return true;
+      }
+      else{
+        logger.error("Duplicated host and port: " + 
                         name + " -> " + JSON.stringify(item));
-          return false;
-        }
-        else{
-          self.host_port[v.toLowerCase().trim()] = k;
-          item.schema = k.toLowerCase().trim();
-          item.host = v.split(':')[0].trim();
-          item.port = v.split(':')[1].trim();
-        }
-        break;
+        return false;
       }
     }
-    if (found_schema) {
-      return true;
-    }
     else{
-    logger.error("Not supported schema item: " + 
-                 name + " -> " + JSON.stringify(item));
-      return true;
+      logger.error("Not supported schema item: " + 
+                   name + " -> " + JSON.stringify(item));
+      return false;
     }
   }
   else{

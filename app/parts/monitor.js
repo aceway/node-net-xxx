@@ -3,8 +3,9 @@ const logger = require('../utils/logger.js');
 const ListenPartBase = require('./listenPartBase.js');
 
 class Monitor extends ListenPartBase{
-  constructor(schema, host, port, handler, response){
-    super('monitor', schema, host, port, handler, true);
+  constructor(part_cfg, handler){
+    part_cfg.response = true;
+    super('monitor', part_cfg, handler);
   }
 }
 

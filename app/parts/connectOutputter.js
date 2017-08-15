@@ -3,8 +3,8 @@ const logger = require('../utils/logger.js');
 const ConnectPartBase = require('./connectPartBase.js');
 
 class ConnectOutputter extends ConnectPartBase{
-  constructor(schema, host, port, handler, response){
-    super('connect_outputter', schema, host, port, handler, response);
+  constructor(part_cfg, handler){
+    super('connect_outputter', part_cfg, handler);
   }
 }
 

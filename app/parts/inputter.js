@@ -3,8 +3,8 @@ const logger = require('../utils/logger.js');
 const ListenPartBase = require('./listenPartBase.js');
 
 class Inputter extends ListenPartBase{
-  constructor(schema, host, port, handler, response){
-    super('inputter', schema, host, port, handler, response);
+  constructor(part_cfg, handler){
+    super('inputter', part_cfg, handler);
   }
 }
 

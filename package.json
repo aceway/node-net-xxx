@@ -5,7 +5,7 @@
   "main": "app.js",
   "dependencies": {
     "log4js": "^1.1.1",
-    "socket.io": "^2.0.3"
+    "ws": "^3.1.0"
   },
   "devDependencies": {},
   "scripts": {
@@ -18,5 +18,6 @@
     "unit"
   ],
   "author": "aceway@qq.com",
-  "license": "MIT"
+  "license": "MIT",
+  "optionalDependencies": {}
 }

@@ -3,17 +3,16 @@ const logger = require('../utils/logger.js');
 const PartBase = require('./partBase.js');
 
 class ConnectPartBase extends PartBase{
-  constructor(part_type, schema, host, port, 
-              handler, response) {
-    super('connect', part_type, schema, host, port, handler, response);
+  constructor(part_type, part_cfg, handler) {
+    super('connect', part_type, part_cfg, handler);
   }
 }
 
 ConnectPartBase.prototype.connect = function () {
 	let self = this;
   let prr = function(resolve, reject){
-		reject(self.host +":"+ self.port + " not supported not, " +
-           "would implement schema:" + self.schema);
+		reject(self.part_cfg.host +":"+ self.part_cfg.port + " not supported not, " +
+           "would implement schema:" + self.part_cfg.schema);
   };
 
   let promiss = null;
@@ -21,7 +20,7 @@ ConnectPartBase.prototype.connect = function () {
 	case 'http':
     promiss = self.connectHttp();
 		break;
-	case 'websocket':
+	case 'ws':
     promiss = new Promise(prr);
 		break;
 	case 'tcp':
@@ -44,7 +43,7 @@ ConnectPartBase.prototype.connectHttp = function () {
   let self = this;
 	logger.trace("Try start ["+self.part_type+"] connect to " + self.id);
   let HttpClient = require('../utils/net/HttpClient.js');
-  this.net = new HttpClient(self.host, self.port, self.handler, true);
+  this.net = new HttpClient(self.part_cfg, self.handler);
   return this.net.connect();
 };
 

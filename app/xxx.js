@@ -209,8 +209,7 @@ XXX.prototype.startOneListenPart = function(partType, partCfg) {
   let partObj = null;
   switch(partType){
   case 'monitor':
-    partObj = new Monitor(partCfg.schema, partCfg.host, partCfg.port, 
-                          dataHandler.dataProcess);
+    partObj = new Monitor(partCfg, dataHandler.dataProcess);
     if (!partMgr.hasPartObj(partObj)){
       partMgr.addOnePart(partObj);
     } 
@@ -219,8 +218,7 @@ XXX.prototype.startOneListenPart = function(partType, partCfg) {
     }
     break; 
   case 'inputter':
-    partObj = new Inputter(partCfg.schema, partCfg.host, partCfg.port, 
-                           dataHandler.dataProcess, partCfg.response);
+    partObj = new Inputter(partCfg, dataHandler.dataProcess);
     if (!partMgr.hasPartObj(partObj)){
       partMgr.addOnePart(partObj);
     } 
@@ -229,8 +227,7 @@ XXX.prototype.startOneListenPart = function(partType, partCfg) {
     }
     break; 
   case 'listen_outputter':
-    partObj = new ListenOutputter(partCfg.schema, partCfg.host, partCfg.port, 
-                           dataHandler.dataProcess, partCfg.response);
+    partObj = new ListenOutputter(partCfg, dataHandler.dataProcess);
     if (!partMgr.hasPartObj(partObj)){
       partMgr.addOnePart(partObj);
     } 
@@ -263,8 +260,7 @@ XXX.prototype.startOneConnectPart = function(partType, partCfg) {
   let partObj = null;
   switch(partType){
   case 'connect_outputter':
-    partObj = new ConnectOutputter(partCfg.schema, partCfg.host, partCfg.port, 
-                           dataHandler.dataProcess, partCfg.response);
+    partObj = new ConnectOutputter(partCfg, dataHandler.dataProcess);
     if (!partMgr.hasPartObj(partObj)){
       partMgr.addOnePart(partObj);
     } 
