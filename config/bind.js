@@ -5,6 +5,7 @@
 const config = {
   "monitor": [            // 为监控本 node-net-xxx 状况创建的监听端口
     {schema: "http", host:"192.168.1.99", port: 2000},
+    {schema: "http", host:"127.0.0.1", port: 2001},
   ],
   "inputter": [           // 为接收外部数据创建的监听端口
     {schema: "http", host: "127.0.0.1", port: 3000},
