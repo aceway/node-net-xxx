@@ -27,22 +27,38 @@ WSServer.prototype.start = function () {
     //opt.maxPayload {Number} The maximum allowed message size in bytes.
     self.wsServer = new WebSocket.Server(opt);
     self.wsServer.on('listening', function connection(ws) {
+      resolve("OK");
+	    logger.info("Listen WebSocket on ws://" + opt.host + ":" + opt.port + "/");
+      if ( !self.isRunning ){
+        self.isRunning = true;
+      }
     });
 
-    self.wsServer.on('error', function connection(ws) {
+    self.wsServer.on('error', function connection(e) {
+	  	let tips = "WebSocket error:" + e;
+      logger.error(tips);
+      if ( !self.isRunning ){
+        reject(tips);
+      }
     });
     
     self.wsServer.on('connection', function connection(ws) {
       ws.on('message', function incoming(message) {
-        console.log('received: %s', message);
+        logger.debug('Received: %s', message);
       });
-    
     });
   });
   return promiss;
 };
 
-WSServer.prototype.sendData = function () {
+WSServer.prototype.sendData = function (data, timeout) {
+  let self = this;
+  if (self.wsServer && self.wsServer.clients){
+    self.wsServer.clients.forEach(function(ws){
+      if (ws.isAlive === false) {return ws.terminate();}
+      ws.send(data);
+    });
+  }
 };
 
 module.exports = WSServer;
