@@ -44,7 +44,21 @@ WSServer.prototype.start = function () {
     
     self.wsServer.on('connection', function connection(ws) {
       ws.on('message', function incoming(message) {
-        logger.debug('Received: %s', message);
+        logger.debug(self.option.schema + 
+                    ' webSocket server rcv msg:' + message);
+        if (typeof self.handler === 'function'){
+          self.handler(message, function(error, result){
+            if (['inputter', 'monitor'].indexOf(self.option.part_type) >= 0 && 
+                self.option.response){
+              if (error){
+                ws.send("node-net-xxx process data error: " + error);
+              }
+              else{
+                ws.send(result);
+              }
+            }
+          });
+        }
       });
     });
   });
@@ -55,8 +69,9 @@ WSServer.prototype.sendData = function (data, timeout) {
   let self = this;
   if (self.wsServer && self.wsServer.clients){
     self.wsServer.clients.forEach(function(ws){
-      if (ws.isAlive === false) {return ws.terminate();}
-      ws.send(data);
+      if (typeof ws.send === 'function'){
+        ws.send(data);
+      }
     });
   }
 };

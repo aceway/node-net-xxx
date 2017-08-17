@@ -63,29 +63,34 @@ HttpServer.prototype.start = function () {
 	  			self.handler(info, function(err, outputData){
             dataChunks = null;
       			data = null;
-	  				if (! err ){
-	  					if ( self.option.response === true ){
-	  						res.writeHead(200, {'Content-Type': 'text/json'});
-	  						if (typeof outputData === 'string' && outputData.length > 0){
-	  							res.write(outputData);
-	  						}
-	  						else{
-	  							res.write("Nothing response");
-	  						}
-	  						res.end();
-	  					}
-	  					else{
-	  						res.writeHead(200, {'Content-Type': 'text/json'});
-	  						res.end();
-	  					}
-	  				}
-	  				else{
-	  					let tips = "Some thing error:" + err;
+	  				if (err){
+              logger.error("HttpServer call data handler but return error:" + err);
+	  					let tips = "Node-net-xxx process data error:" + err;
 	  					logger.error(tips + ',' + outputData);
 	  					res.writeHead(500, {'Content-Type': 'text/json'});
 	  					res.write(tips);
 	  					res.end();
 	  					logger.warn("HttpServer "+ self.full_name +" error: " + err);
+	  				}
+	  				else{
+	  					if (['inputter', 'monitor'].indexOf(self.option.part_type) >= 0 &&
+                  self.option.response === true ){
+	  						res.writeHead(200, {'Content-Type': 'text/json'});
+	  						if (typeof outputData === 'string' && outputData.length > 0){
+	  							res.write(outputData);
+	  						}
+	  						else{
+	  							res.write("{desc: 'Nothing response'");
+	  						}
+	  						res.end();
+	  					}
+	  					else{
+                let result = {code: 0, desc:'not inputter or monitor, or not set createServerp'};
+                result.data = self.option;
+	  						res.writeHead(200, {'Content-Type': 'text/json'});
+	  						res.write(JSON.stringify(result));
+	  						res.end();
+	  					}
 	  				}
 	  			});
 	  		}

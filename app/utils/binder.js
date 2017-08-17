@@ -57,6 +57,7 @@ Binder.prototype.checkOneItem = function (name, item) {
       let hp = item.host.toLowerCase().trim() + ":" + item.port;
       if ( !self.host_port[hp] ){
         item.schema = item.schema.toLowerCase().trim();
+        item.part_type = name.toLowerCase().trim();
         self.host_port[hp] = item.schema;
         return true;
       }

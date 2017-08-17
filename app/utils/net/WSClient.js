@@ -8,11 +8,11 @@ class WSClient{
     this.handler   = handler;
 	  this.isRunning = false;
     this.full_name = "ws://" + this.option.host + ":" + this.option.port + "/";
-    this.wsClients = {};
+    this.wsClient  = null;
   }
 }
 
-WSClient.prototype.start = function () {
+WSClient.prototype.connect = function () {
   let self = this;
   let promiss = new Promise(function(resolve, reject){
     if (self.wsClient && self.isRunning === true){
@@ -36,9 +36,22 @@ WSClient.prototype.start = function () {
       }
     });
 
-    self.wsClient.on('message', function incoming(data) {
-	  	let tips = "WebSocket message: " + data;
-      logger.debug(tips);
+    self.wsClient.on('message', function incoming(message) {
+      logger.debug(self.option.schema + 
+                   ' webSocket client rcv msg:' + message);
+      if (typeof self.handler === 'function'){
+        self.handler(message, function(error, result){
+          if (['inputter', 'monitor'].indexOf(self.option.schema) >= 0 && 
+              self.option.response){
+            if (error){
+              self.sendData("node-net-xxx process data error: " + error);
+            }
+            else{
+              self.sendData(result);
+            }
+          }
+        });
+      }
     });
   });
   return promiss;
@@ -46,10 +59,19 @@ WSClient.prototype.start = function () {
 
 WSClient.prototype.sendData = function (data, timeout) {
   let self = this;
-  if (self.wsClient && self.wsClient.send){
-    self.wsClient.clients.forEach(function(ws){
+  if (self.wsClient && typeof self.wsClient.send === 'function'){
+    if (typeof data === 'string'){
       self.wsClient.send(data);
-    });
+    }
+    else{
+      try{
+        const strData = JSON.stringify(data);
+        self.wsClient.send(strData);
+      }
+      catch(e){
+        self.wsClient.send(e + "");
+      }
+    }
   }
 };
 
