@@ -40,7 +40,25 @@ WSClient.prototype.connect = function () {
       logger.debug(self.option.schema + 
                    ' webSocket client rcv msg:' + message);
       if (typeof self.handler === 'function'){
-        self.handler(message, function(error, result){
+        let from = self.option.host;
+        let data = null;
+        if (typeof message === 'string'){
+          try{
+            data = JSON.parse(message);
+          }
+          catch(e){
+            data = message + "";
+          }
+        }
+        else{
+          data = message;
+        }
+
+        let info = {'data': data, 'part': self.full_name, 'from':from};
+        self.handler(info, function(error, result){
+          if (typeof result !== 'string'){
+            result = JSON.stringify(result);
+          }
           if (['inputter', 'monitor'].indexOf(self.option.schema) >= 0 && 
               self.option.response){
             if (error){

@@ -16,7 +16,6 @@ class HttpClient {
 HttpClient.prototype.connect = function () {
   let self = this;
   return self.sendData({'data':"node-net-xxx ping!"},3000,'/node-net-xxx/', 'post');
-          //.then( (e)=>{self.sendData({'data': 'again'});});
 };
 
 HttpClient.prototype.sendData = function (data, timeout, path, method) {

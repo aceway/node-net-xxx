@@ -1,6 +1,7 @@
 'use strict';
 const logger = require('../logger.js');
 const WebSocket = require('ws');
+const tools = require("../tools.js");
 
 class WSServer{
   constructor(option, handler){
@@ -42,12 +43,29 @@ WSServer.prototype.start = function () {
       }
     });
     
-    self.wsServer.on('connection', function connection(ws) {
+    self.wsServer.on('connection', function connection(ws, req) {
       ws.on('message', function incoming(message) {
         logger.debug(self.option.schema + 
                     ' webSocket server rcv msg:' + message);
         if (typeof self.handler === 'function'){
-          self.handler(message, function(error, result){
+          let from = tools.getReqIp(req);
+          let data = null;
+          if (typeof message === 'string'){
+            try{
+              data = JSON.parse(message);
+            }
+            catch(e){
+              data = message + "";
+            }
+          }
+          else{
+            data = message;
+          }
+          let info = {'data': data, 'part': self.full_name, 'from':from};
+          self.handler(info, function(error, result){
+            if (typeof result !== 'string'){
+              result = JSON.stringify(result);
+            }
             if (['inputter', 'monitor'].indexOf(self.option.part_type) >= 0 && 
                 self.option.response){
               if (error){

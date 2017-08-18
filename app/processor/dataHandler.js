@@ -8,11 +8,23 @@ class dataHandler {
 }
 
 dataHandler.prototype.dataProcess = function(dataInfo, callback){
-	logger.trace('handler dataProcess data info' + 
+  if (typeof dataInfo === 'string'){
+	  logger.trace('handler dataProcess data info' + ': ' + dataInfo);
+  }
+  else{
+	  logger.trace('handler dataProcess data info' + 
                 ': ' + JSON.stringify(dataInfo));
+  }
+
 	if (typeof callback === 'function') {
-    partMgr.sendData2AllOutputter(dataInfo);
-		callback(null, JSON.stringify(dataInfo));
+    if (dataInfo && dataInfo.data){
+      partMgr.sendData2AllOutputter(dataInfo.data);
+		  callback(null, dataInfo.data);
+    }
+    else{
+      partMgr.sendData2AllOutputter(dataInfo);
+		  callback(null, dataInfo);
+    }
 	}
 };
 

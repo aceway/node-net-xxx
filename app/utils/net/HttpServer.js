@@ -79,8 +79,16 @@ HttpServer.prototype.start = function () {
 	  						if (typeof outputData === 'string' && outputData.length > 0){
 	  							res.write(outputData);
 	  						}
+	  						else if (typeof outputData === 'object' ){
+                  try{
+	  							  res.write(JSON.stringify(outputData));
+                  }
+                  catch(e){
+	  							  res.write(e + "");
+                  }
+	  						}
 	  						else{
-	  							res.write("{desc: 'Nothing response'");
+	  							res.write("{desc: 'Nothing response'}");
 	  						}
 	  						res.end();
 	  					}
