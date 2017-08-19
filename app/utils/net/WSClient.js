@@ -1,13 +1,13 @@
 'use strict';
-const logger = require('../logger.js');
 const WebSocket = require('ws');
 
-class WSClient{
+const logger = require('../logger.js');
+const NetBase= require("./NetBase.js");
+
+class WSClient extends NetBase{
   constructor(option, handler){
-    this.option = option;
-    this.handler   = handler;
+    super(option, handler);
 	  this.isRunning = false;
-    this.full_name = "ws://" + this.option.host + ":" + this.option.port + "/";
     this.wsClient  = null;
   }
 }

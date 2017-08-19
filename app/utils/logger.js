@@ -136,8 +136,8 @@ Logger.init = function (callback) {
 
   if (log4js.levels && log4js.levels.config && 
       typeof log4js.levels.getLevel === 'function'){
-    let cfg = log4js.levels.config['[all]'];
-    let lvl = log4js.levels.getLevel(cfg).level;
+    let lgCfg = log4js.levels.config['[all]'];
+    let lvl = log4js.levels.getLevel(lgCfg).level;
     //console.error(lvl);
     //console.error(log4js.levels.getLevel("ALL").level);
     //console.error(log4js.levels.getLevel("TRACE").level);
@@ -146,8 +146,8 @@ Logger.init = function (callback) {
     //console.error(log4js.levels.getLevel("WARN").level);
     //console.error(log4js.levels.getLevel("ERROR").level);
     //console.error(log4js.levels.getLevel("FATAL").level);
-    if (cfg && lvl){
-      console.info("GOT CFG LOGGER LEVEL: " + cfg + " - " + lvl);
+    if (lgCfg && lvl){
+      console.info("GOT CFG LOGGER LEVEL: " + lgCfg + " - " + lvl);
       if ( lvl === log4js.levels.getLevel("ALL").level){
         self.escape_trace = false;
         self.escape_debug = false;

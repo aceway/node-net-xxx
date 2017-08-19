@@ -1,14 +1,13 @@
 'use strict';
-const logger = require('../logger.js');
 const WebSocket = require('ws');
+const logger = require('../logger.js');
 const tools = require("../tools.js");
+const NetBase= require("./NetBase.js");
 
-class WSServer{
+class WSServer extends NetBase{
   constructor(option, handler){
-    this.option = option;
-    this.handler   = handler;
+    super(option, handler);
 	  this.isRunning = false;
-    this.full_name = "ws://" + this.option.host + ":" + this.option.port + "/";
     this.wsServer  = null;
     this.wsClients = {};
   }
@@ -29,6 +28,7 @@ WSServer.prototype.start = function () {
     self.wsServer = new WebSocket.Server(opt);
     self.wsServer.on('listening', function connection(ws) {
       resolve("OK");
+	    //logger.info("Listen WebSocket on: " + JSON.stringify(self.wsServer.address()));
 	    logger.info("Listen WebSocket on ws://" + opt.host + ":" + opt.port + "/");
       if ( !self.isRunning ){
         self.isRunning = true;

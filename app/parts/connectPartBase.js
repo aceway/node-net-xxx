@@ -21,9 +21,10 @@ ConnectPartBase.prototype.connect = function () {
     promiss = self.connectHttp();
 		break;
 	case 'ws':
-    promiss = self.connectWS();
+    promiss = self.connectWs();
 		break;
 	case 'tcp':
+    //promiss = self.connectTcp();
     promiss = new Promise(prr);
 		break;
 	case 'https':
@@ -43,16 +44,24 @@ ConnectPartBase.prototype.connectHttp = function () {
   let self = this;
 	logger.trace("Try start ["+self.part_type+"] connect to " + self.id);
   let HttpClient = require('../utils/net/HttpClient.js');
-  this.net = new HttpClient(self.part_cfg, self.handler);
-  return this.net.connect();
+  self.net = new HttpClient(self.part_cfg, self.handler);
+  return self.net.connect();
 };
 
-ConnectPartBase.prototype.connectWS = function () {
+ConnectPartBase.prototype.connectWs = function () {
   let self = this;
 	logger.trace("Try start ["+self.part_type+"] connect to " + self.id);
   let WSClient = require('../utils/net/WSClient.js');
-  this.net = new WSClient(self.part_cfg, self.handler);
-  return this.net.connect();
+  self.net = new WSClient(self.part_cfg, self.handler);
+  return self.net.connect();
 };
+
+//ConnectPartBase.prototype.connectTcp = function () {
+//  let self = this;
+//	logger.trace("Try start ["+self.part_type+"] connect to " + self.id);
+//  let TCPClient = require('../utils/net/TCPClient.js');
+//  self.net = new TCPClient(self.part_cfg, self.handler);
+//  return self.net.connect();
+//};
 
 module.exports = ConnectPartBase;

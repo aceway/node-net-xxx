@@ -32,10 +32,11 @@ Binder.prototype.prepareCfg = function (callback) {
 
 Binder.prototype.checkPartsItems = function (name) {
   let self = this;
-  if (self.cfg && Array.isArray(self.cfg[name]) && self.cfg[name].length > 0){
+  if (self.cfg && self.cfg.parts && Array.isArray(self.cfg.parts[name]) && 
+      self.cfg.parts[name].length > 0){
     let item = null;
-    for(let i = 0; i < self.cfg[name].length; i++){
-      item = self.cfg[name][i];
+    for(let i = 0; i < self.cfg.parts[name].length; i++){
+      item = self.cfg.parts[name][i];
       if ( !self.checkOneItem(name, item) ) {
         return false;
       }
@@ -44,7 +45,7 @@ Binder.prototype.checkPartsItems = function (name) {
     return true;
   }
   else{
-    logger.info("Bind config [" + name + "] error.");
+    logger.warn("Bind config [" + name + "] format error.");
     return false;
   }
 };

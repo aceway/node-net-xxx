@@ -2,14 +2,13 @@
 const http = require("http");
 const util = require("util");
 const logger = require("../logger.js");
+const NetBase= require("./NetBase.js");
 
 const METHODS = ['post', 'get'];
 
-class HttpClient {
+class HttpClient extends NetBase {
   constructor(option, handler) {
-    this.option = option;
-    this.handler = handler;
-    this.full_name = "http://" + this.option.host + ":" + this.option.port + "/";
+    super(option, handler);
   }
 }
 

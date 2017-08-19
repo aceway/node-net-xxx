@@ -24,7 +24,7 @@ ListenPartBase.prototype.start = function () {
     promiss = self.startWsListen();
 		break;
 	case 'tcp':
-    promiss = new Promise(prr);
+    promiss = self.startTcpListen();
 		break;
 	case 'https':
     promiss = new Promise(prr);
@@ -43,17 +43,24 @@ ListenPartBase.prototype.startHttpListen = function () {
   let self = this;
 	logger.trace("Try start ["+self.part_type+"] listen on " + self.id);
   let HttpServer = require('../utils/net/HttpServer.js');
-  this.net = new HttpServer(self.part_cfg, self.handler);
-  return this.net.start();
+  self.net = new HttpServer(self.part_cfg, self.handler);
+  return self.net.start();
 };
 
 ListenPartBase.prototype.startWsListen = function () {
   let self = this;
 	logger.trace("Try start ["+self.part_type+"] listen on " + self.id);
   let WSServer = require('../utils/net/WSServer.js');
-  self.part_cfg.response = true;
-  this.net = new WSServer(self.part_cfg, self.handler);
-  return this.net.start();
+  self.net = new WSServer(self.part_cfg, self.handler);
+  return self.net.start();
+};
+
+ListenPartBase.prototype.startTcpListen = function () {
+  let self = this;
+	logger.trace("Try start ["+self.part_type+"] listen on " + self.id);
+  let TCPServer = require('../utils/net/TCPServer.js');
+  self.net = new TCPServer(self.part_cfg, self.handler);
+  return self.net.start();
 };
 
 module.exports = ListenPartBase;

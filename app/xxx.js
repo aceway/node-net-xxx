@@ -83,7 +83,7 @@ XXX.prototype.startListen4Parts = function(partType, any_all){
   logger.trace("startListen4Parts(" + partType + ", " + any_all + ")");
   let promiss = new Promise((resolve, reject) => {
     let ok_cnt = 0;
-    let ptCfgs = self.binder.cfg[partType];
+    let ptCfgs = self.binder.cfg.parts[partType];
     let recursePromiss = function(idx){
       if (0 <= idx && idx < ptCfgs.length ){
         let ptCfg = ptCfgs[idx];
@@ -145,7 +145,7 @@ XXX.prototype.startConnect4Parts = function(partType, any_all){
   logger.trace("startConnect4Parts(" + partType + ", " + any_all + ")");
   let promiss = new Promise((resolve, reject) => {
     let ok_cnt = 0;
-    let ptCfgs = self.binder.cfg[partType];
+    let ptCfgs = self.binder.cfg.parts[partType];
     let recursePromiss = function(idx){
       if (0 <= idx && idx < ptCfgs.length ){
         let ptCfg = ptCfgs[idx];

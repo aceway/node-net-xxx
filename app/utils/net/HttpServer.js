@@ -1,17 +1,16 @@
 'use strict';
 const http = require("http");
 const queryStr = require('querystring');
-const tools = require("../tools.js");
 const urlMgr = require('url');
 
+const tools = require("../tools.js");
 const logger = require("../logger.js");
+const NetBase= require("./NetBase.js");
 
-class HttpServer {
+class HttpServer extends NetBase  {
   constructor(option, handler) {
-    this.option = option;
-    this.handler = handler;
+    super(option, handler);
 	  this.isRunning = false;
-    this.full_name = "http://" + this.option.host + ":" + this.option.port + "/";
     this.httpServer= null;
   }
 }
@@ -64,17 +63,17 @@ HttpServer.prototype.start = function () {
             dataChunks = null;
       			data = null;
 	  				if (err){
-              logger.error("HttpServer call data handler but return error:" + err);
+	  					logger.warn("HttpServer "+ self.full_name +" error: " + err);
 	  					let tips = "Node-net-xxx process data error:" + err;
 	  					logger.error(tips + ',' + outputData);
 	  					res.writeHead(500, {'Content-Type': 'text/json'});
 	  					res.write(tips);
 	  					res.end();
-	  					logger.warn("HttpServer "+ self.full_name +" error: " + err);
 	  				}
 	  				else{
-	  					if (['inputter', 'monitor'].indexOf(self.option.part_type) >= 0 &&
-                  self.option.response === true ){
+	  					if (['inputter','monitor'].indexOf(self.option.part_type) >= 0 &&
+                  self.option.response){
+                logger.debug('xxxxxxxxxxxxxxx' + JSON.stringify(self.option));
 	  						res.writeHead(200, {'Content-Type': 'text/json'});
 	  						if (typeof outputData === 'string' && outputData.length > 0){
 	  							res.write(outputData);
@@ -84,7 +83,7 @@ HttpServer.prototype.start = function () {
 	  							  res.write(JSON.stringify(outputData));
                   }
                   catch(e){
-	  							  res.write(e + "");
+	  							  res.write("Node-net-xxx catch exception: " + e);
                   }
 	  						}
 	  						else{
@@ -93,10 +92,10 @@ HttpServer.prototype.start = function () {
 	  						res.end();
 	  					}
 	  					else{
-                let result = {code: 0, desc:'not inputter or monitor, or not set createServerp'};
-                result.data = self.option;
+                let ret = {code: 0};
+                ret.desc = 'Neither inputter nor monitor, no respone setting.';
 	  						res.writeHead(200, {'Content-Type': 'text/json'});
-	  						res.write(JSON.stringify(result));
+	  						res.write(JSON.stringify(ret));
 	  						res.end();
 	  					}
 	  				}
