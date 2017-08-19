@@ -80,6 +80,7 @@ tools.parseMessageData = function(binBuffer, dataLen, maxMsgLen, maxMsgCnt){
     else {
       // 可以取到一个完整包
       let msgBuffer = new Buffer(msgLen, "binary");
+      // TODO remove firat uint32
       binBuffer.copy(msgBuffer, 0, offset, offset+msgLen);
       msgDataInfo.messages.push(msgBuffer);
       offset += msgLen;
