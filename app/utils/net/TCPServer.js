@@ -5,8 +5,11 @@ const tools = require("../tools.js");
 const NetBase= require("./NetBase.js");
 
 const MAX_MSG_LEN             = 1024 * 4; // 允许对端发送的最大包长(字节单位)
-const RCV_CLNT_BUFFER_LEN     = 1024 * 128;       // 每个接收缓冲区初始化长度
-const RCV_CLNT_BUFFER_LEN_MAX = 1024 * 1024 * 64; // 每个接收缓冲区最大长度
+const RCV_BUFFER_LEN     = 1024 * 128;       // 每个接收缓冲区初始化长度
+const RCV_BUFFER_LEN_MAX = 1024 * 1024 * 64; // 每个接收缓冲区最大长度
+
+const SND_BUFFER_LEN     = 1024 * 1024;       // 每个发送缓冲区初始化长度
+const SND_BUFFER_LEN_MAX = 1024 * 1024 * 64; // 每个发送缓冲区最大长度
 
 class TCPServer extends NetBase{
   constructor(option, handler){
@@ -47,53 +50,66 @@ TCPServer.prototype.start = function () {
     
     self.tcpServer.on('connection', (socket) => {
       socket._clientId = ++self.clientId;
-      socket._rcvBfLen = RCV_CLNT_BUFFER_LEN; // 初始化缓冲区长度
-      socket._rcvBf = new Buffer(socket._rcvBfLen);
-      socket._rcvBf.fill(0, 0);
+      socket._rcvBfLen = RCV_BUFFER_LEN; // 初始化缓冲区长度
+      socket._rcvBf = Buffer.alloc(socket._rcvBfLen, 0);
       socket._rcvBfDtLen = 0; // 缓冲区中存储的有效数据长度
-      socket._strAddress = JSON.stringify(socket.address());
+      socket._remote = {};
+      socket._remote.address= socket.remoteAddress;
+      socket._remote.family = socket.remoteFamily;
+      socket._remote.port   = socket.remotePort;
+      socket._strRemote = JSON.stringify(socket._remote);
       self.clients[socket._clientId] = socket;
 
       socket.on('error', (error) => {
         if (typeof error === 'string'){
-          logger.warn(self + " client TCP socket " + socket._strAddress + 
-                      " error" + error);
+          logger.warn(self + " client socket " + socket._strRemote + 
+                      " error: " + error);
         }
         else if(error instanceof Error){
-          logger.warn(self + " client TCP socket " + socket._strAddress + 
-                      " error" + (error? ": " +error.message : ".") );
+          logger.warn(self + " client socket " + socket._strRemote + 
+                      " error " + (error? ": " +error.message : ".") );
         }
         else{
           try{
-            logger.warn(self + " client TCP socket " + socket._strAddress + 
+            logger.warn(self + " client socket " + socket._strRemote + 
                         " error: " + JSON.stringify(error));
           }
           catch(e){
-            logger.warn(self + " client TCP socket " + socket._strAddress + 
+            logger.warn(self + " client socket " + socket._strRemote + 
                         " error: " + error);
           }
         }
       });
 
       socket.on('data', (data) => {
-        if (data instanceof Buffer){
-          logger.debug("socket emit data.");
-          while (socket && socket._rcvBf.length < RCV_CLNT_BUFFER_LEN_MAX && 
+        //if (data instanceof Buffer){
+        if (Buffer.isBuffer(data)){
+          logger.debug(self + " client socket " + 
+                       socket._strRemote + " emit data.");
+          // 是否需要增加缓冲区
+          let cpLen = 0;
+          let tmpBuffer = null;
+          while (socket._rcvBf.length < RCV_BUFFER_LEN_MAX && 
                  socket._rcvBf.length < (data.length+socket._rcvBfDtLen)){
-            let tmpBuffer = new Buffer(socket._rcvBfLen);
-            socket._rcvBf.copy(tmpBuffer, 0, 0, socket._rcvBfLen);
-            socket._rcvBf = null;
-            socket._rcvBfLen += RCV_CLNT_BUFFER_LEN;
-            socket._rcvBf = new Buffer(socket._rcvBfLen);
-            socket._rcvBf.fill(0, 0);
-            tmpBuffer.copy(socket._rcvBf, 0, 0, tmpBuffer.length);
-
-            logger.debug(self + " socket [" + socket._strAddress + 
-                         "] socket._rcvBfLen:" + socket._rcvBfLen);
+            tmpBuffer = Buffer.from(socket._rcvBf);
+            socket._rcvBfLen += RCV_BUFFER_LEN;
+            socket._rcvBf = Buffer.alloc(socket._rcvBfLen, 0);
+            cpLen = tmpBuffer.copy(socket._rcvBf, 0, 0, tmpBuffer.length);
+            if (cpLen === tmpBuffer.length){
+              logger.debug(self + " client socket " + socket._strRemote + 
+                          " alloc more socket._rcvBfLen:" + socket._rcvBfLen);
+            }
+            else{
+              let tips = self + " client socket " + socket._strRemote +
+                           " alloc more recv buff copy failed, would close it.";
+              logger.error(tips);
+              socket.destroy(tips);
+              return;
+            }
           }
-          if (socket && socket._rcvBf.length >= RCV_CLNT_BUFFER_LEN_MAX){
-            let tips = self + " socket [" + socket._strAddress +
-                         "] rcv buffer len is too long:" +
+          if (socket._rcvBf.length >= RCV_BUFFER_LEN_MAX){
+            let tips = self + " client socket " + socket._strRemote +
+                         " rcv buffer len is too long:" +
                          socket._rcvBf.length + ", escape its data of req";
             logger.error(tips);
             socket.destroy(tips);
@@ -101,69 +117,83 @@ TCPServer.prototype.start = function () {
             return;
           }
 
-          // 新数据转入缓冲区
-          data.copy(socket._rcvBf, socket._rcvBfDtLen, 0, data.length);
+          // 新数据转入缓冲区, 假设下面 copy 总是成功
+          cpLen = data.copy(socket._rcvBf, socket._rcvBfDtLen, 0, data.length);
+          if (cpLen !== data.length){
+            let tips = self + " client socket " + socket._strRemote +
+                         " data buff copy failed, would close it.";
+            logger.error(tips);
+            socket.destroy(tips);
+            return;
+          }
           socket._rcvBfDtLen += data.length;
 
-          // 是否可解包 及其解包的处理
-          if(socket && socket._rcvBfDtLen >= 4){ // 此时才可以解析出头四个字节---包长信息
-            let msgLen = socket._rcvBf.readUInt32LE(0);
-            if ( msgLen > socket._rcvBfDtLen ){ // 不够一个完整包
-              if (msgLen > MAX_MSG_LEN){
-                logger.warn(self + " socket [" + socket._strAddress + 
-                            ", message len:" + msgLen + " too long than " +
-                            MAX_MSG_LEN + ", would close socket...");
-                socket.destroy("Message too long, would close client");
-                return;
-              }
-              else{
-                logger.warn(self + " socket [" + socket._strAddress + 
-                            " buffer data len:" + socket._rcvBfDtLen + 
-                            ", message len:" + msgLen + ",continue recv...");
-                return;
-              }
-            }
-            // 能够解析包了， 但有可能有多
-            let msgInfo = tools.parseMessageData(socket._rcvBf, socket._rcvBfDtLen); 
-            if (msgInfo === null){
-              socket.destroy("The client send socket data message head " + 
-                             "len illegal, so closed it.");
-              logger.error("The client send socket data message head " + 
-                           "len illegal, so closed it.");
-              socket._rcvBf = null;
-              socket.destroy("The client send data message illegal.");
-              return;
-            }
-
-            if (msgInfo.restLen > 0){
-              socket._rcvBfDtLen = msgInfo.restLen;
-              // 数据移动已经在 parseMessageData(...) 中完成
-            }
-            else{
-              socket._rcvBfDtLen = 0;
-            }
-
-            // 某些情况下需要同步处理(如后继包对前面某个包业务强依赖，
-            // 但这几个包一次网络event到到服务端应用层---客户端未做等待返回后再请求)，暂时异步处理
-            if ( msgInfo && Array.isArray(msgInfo.messages) ){
-              let packet = null;
-              msgInfo.messages.forEach(function(msg){
-                if ( msg && typeof self.handler === 'function' ) {
-                  // TODO: 
-                  //if (self.option.response){
-                  //}
-                  //self.handler(msg,function(err, outputData){
-                  //  // TODO socket.sendData()
-                  //});
-                }
-              });
-            }
-          }
-          else { // 不够解包长度信息的
-            logger.warn(self + " socket [" + socket._strAddress +
+          if(socket._rcvBfDtLen < 4){ // 此时才可以解析出头四个字节---包长信息
+            logger.warn(self + " client socket " + socket._strRemote +
                         " buffer data len:" + socket._rcvBf.length +
                         ", it is too short:" + socket._rcvBfDtLen + 
                         ", continue recv..." );
+            return;
+          }
+
+          // 此时才可以解析出头四个字节---包长信息
+          let msgLen = socket._rcvBf.readUInt32LE(0);
+          if ( msgLen > socket._rcvBfDtLen ){ // 不够一个完整包
+            if (msgLen > MAX_MSG_LEN){
+              logger.warn(self + " client socket " + socket._strRemote + 
+                          ", message len:" + msgLen + " too long than " +
+                          MAX_MSG_LEN + ", would close socket...");
+              socket.destroy("Message too long, would close client");
+              return;
+            }
+            else{
+              logger.warn(self + " client socket " + socket._strRemote + 
+                          " buffer data len:" + socket._rcvBfDtLen + 
+                          ", message len:" + msgLen + ",continue recv...");
+              return;
+            }
+          }
+          // 能够解析包了， 但有可能有多
+          let msgInfo = tools.parseMessageData(socket._rcvBf, socket._rcvBfDtLen); 
+          if (msgInfo === null){
+            socket.destroy("The client socket " + socket._strRemote +  
+                           " sent len illegal data, so closed it.");
+            logger.error("The client socket " + socket._strRemote +  
+                           " sent data message head " + 
+                           "len illegal, so closed it.");
+            socket._rcvBf = null;
+            socket.destroy("The client send data message illegal.");
+            return;
+          }
+
+          if (msgInfo.restLen > 0){
+            socket._rcvBfDtLen = msgInfo.restLen;
+            // 数据移动已经在 parseMessageData(...) 中完成
+          }
+          else{
+            socket._rcvBfDtLen = 0;
+          }
+
+          // 某些情况下需要同步处理(如后继包对前面某个包业务强依赖，
+          // 但这几个包一次网络event到到服务端应用层---客户端未做等待返回后再请求)，暂时异步处理
+          if ( msgInfo && Array.isArray(msgInfo.messages) ){
+            let packet = null;
+            msgInfo.messages.forEach(function(msg){
+              if ( msg && typeof self.handler === 'function' ) {
+                self.handler(msg,function(err, outputData){
+                  if (err){
+                    if (self.option.response){
+                      self.sendData("node-net-xxx process data error:" + err);
+                    }
+                  }
+                  else{
+                    if (self.option.response){
+                      self.sendData(outputData);
+                    }
+                  }
+                });
+              }
+            });
           }
         }
         else if (typeof data === 'string'){
@@ -174,8 +204,22 @@ TCPServer.prototype.start = function () {
         }
       });
       socket.on('drain', () => {
+        logger.debug(self + " client socket " + socket._strRemote +
+                      " drain.");
+        if (socket._sndBfDtLen > 0){
+          self._sendSocketBuffer(socket, 60000);
+        }
       });
-      socket.on('close', () => {
+      socket.on('close', (had_error) => {
+        if(had_error){
+          logger.warn(self + " client socket " + socket._strRemote +
+                      " had a transmission error, so closed.");
+        }
+        else{
+          logger.trace(self + " client socket " + socket._strRemote +
+                      " had closed.");
+        }
+        delete self.clients[socket._clientId];
       });
     });
 
@@ -184,16 +228,125 @@ TCPServer.prototype.start = function () {
   return promiss;
 };
 
+// 优先将 socket 发送缓冲区中的数据发送出去
+// 如果发送缓冲区空 则直接发送本次数据
+// 否则发送后将本次数据追加到 发送缓冲末尾
+// socket 的 drain 事件中也触发发送缓冲区数据
 TCPServer.prototype.sendData = function (data, timeout) {
   let self = this;
+  let strData = null;
+  if (typeof data === 'string'){
+    strData = data;
+  }
+  else{
+    strData = JSON.stringify(data);
+  }
+
+  let ttLen = 4 + strData.length;
+  let dtBf = Buffer.alloc(ttLen, 0);
+
   let keys = Object.keys(self.clients);
   let socket = null;
-  for(let i = 0; i < keys.length; ++i){
-    socket = self.clients[keys[i]];
-    if(socket instanceof net.Socket){
-      let ret = socket.write(data, 'utf-8', () =>{
-      });
+  keys.forEach(function(k){
+    socket = self.clients[k];
+    self.sendSocketData(socket, dtBf, timeout);
+  });
+};
+
+// 给一个 socket 发送数据
+const MAX_BUFFER_COPY_TIMES = 100;
+TCPServer.prototype.sendSocketData = function (socket, dtBf, timeout) {
+  let self = this;
+  if (socket instanceof net.Socket && !socket.destroyed && 
+      Buffer.isBufer(dtBf)){
+    // 是否初次发送 --- 分配初始化内存
+    if ( !socket.hasOwnProperty(socket._sndBfLen) || 
+        !Buffer.isBuffer(socket._sndBf) ){
+      socket._sndBfLen = SND_BUFFER_LEN; // 初始化缓冲区长度
+      socket._sndBf = Buffer.alloc(socket._sndBfLen, 0);
+      socket._sndBfDtLen = 0; // 缓冲区中待snd 的有效数据长度
     }
+
+    // 本次数据是否会超长
+    if (dtBf.length + socket._sndBfDtLen > SND_BUFFER_LEN_MAX){
+      logger.error(self + " client socket " + socket._strRemote +
+                   " buffer is full, could not send now...");
+      return false;
+    }
+
+    // 增加发送缓冲区长度
+    let cpLen = 0;
+    let tmpBuffer = null;
+    while(socket._sndBfLen < dtBf.length + socket._sndBfDtLen &&
+          socket._sndBfLen < SND_BUFFER_LEN_MAX){
+      tmpBuffer = Buffer.from(socket._sndBf);
+      socket._sndBfLen += SND_BUFFER_LEN; // 增加缓冲区长度
+      socket._sndBf = Buffer.alloc(socket._sndBfLen, 0);
+      // 假设下面 copy 总是成功
+      cpLen = tmpBuffer.copy(socket._sndBf, 0, 0, tmpBuffer.length);
+      if (cpLen === tmpBuffer.length){
+        logger.debug(self + " client socket " + socket._strRemote + 
+                    " alloc more socket._sndBfLen:" + socket._rcvBfLen);
+      }
+      else{
+        let tips = self + " client socket " + socket._strRemote +
+                     " alloc more send buff copy failed, would close it.";
+        logger.error(tips);
+        socket.destroy(tips);
+        return false;
+      }
+    }
+
+    // 追加本次发送数据
+    cpLen  = dtBf.copy(socket._sndBf, socket._sndBfDtLen, 0, dtBf.length);
+    if(cpLen !==  dtBf.length){
+      let tips = self + " client socket " + socket._strRemote +
+                   " send data buff copy failed, would close it.";
+      logger.error(tips);
+      socket.destroy(tips);
+      return false;
+    }
+
+    // 从缓冲区发送数据,及未发送成功的部分数据转义
+    return self._sendSocketBuffer(socket, timeout);
+  }
+  else{
+    logger.error("TCPServer.sendSocketData parameter error.");
+    return false;
+  }
+};
+
+TCPServer.prototype._sendSocketBuffer = function (socket, timeout) {
+  let self = this;
+  if (socket instanceof net.Socket && !socket.destroyed && 
+      Buffer.isBufer(socket._sndBf) && socket._sndBf.length > 0){
+    let cpLen = 0;
+    let restLen= 0;
+    let tmpBuffer = Buffer.alloc(socket._sndBfDtLen, 0);
+    socket._sndBf.copy(tmpBuffer, 0, 0, socket._sndBfDtLen);
+    if (true === socket.write(tmpBuffer)){
+      restLen = 0;
+      socket._sndBfDtLen = 0;
+      socket._sndBf.fill(0, 0);
+    }
+    else{
+      socket._sndBf.fill(0, 0);
+      restLen = tmpBuffer.length - socket.bytesWritten;
+      cpLen = tmpBuffer.copy(socket._sndBf, 0, socket.bytesWritten, restLen);
+      if (cpLen !== restLen){
+        let tips = self + " client socket " + socket._strRemote +
+                     " send data rest buff copy failed, would close it.";
+        logger.error(tips);
+        socket.destroy(tips);
+        return false;
+      }
+      socket._sndBfDtLen = restLen;
+    }
+    return true;
+  }
+  else{
+    logger.error("TCPServer._sendSocketBuffer parameter error.");
+    return false;
   }
 };
 
