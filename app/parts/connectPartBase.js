@@ -24,14 +24,7 @@ ConnectPartBase.prototype.connect = function () {
     promise = self.connectWs();
 		break;
 	case 'tcp':
-    //promise = self.connectTcp();
-    promise = new Promise(prr);
-		break;
-	case 'https':
-    promise = new Promise(prr);
-		break;
-	case 'wss':
-    promise = new Promise(prr);
+    promise = self.connectTcp();
 		break;
 	default:
     promise = new Promise(prr);
@@ -56,12 +49,12 @@ ConnectPartBase.prototype.connectWs = function () {
   return self.net.connect();
 };
 
-//ConnectPartBase.prototype.connectTcp = function () {
-//  let self = this;
-//	logger.trace("Try start ["+self.part_type+"] connect to " + self.id);
-//  let TCPClient = require('../utils/net/TCPClient.js');
-//  self.net = new TCPClient(self.part_cfg, self.handler);
-//  return self.net.connect();
-//};
+ConnectPartBase.prototype.connectTcp = function () {
+  let self = this;
+	logger.trace("Try start ["+self.part_type+"] connect to " + self.id);
+  let TCPClient = require('../utils/net/TCPClient.js');
+  self.net = new TCPClient(self.part_cfg, self.handler);
+  return self.net.connect();
+};
 
 module.exports = ConnectPartBase;

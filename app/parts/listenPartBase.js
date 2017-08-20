@@ -26,12 +26,6 @@ ListenPartBase.prototype.start = function () {
 	case 'tcp':
     promise = self.startTcpListen();
 		break;
-	case 'https':
-    promise = new Promise(prr);
-		break;
-	case 'wss':
-    promise = new Promise(prr);
-		break;
 	default:
     promise = new Promise(prr);
 		break;

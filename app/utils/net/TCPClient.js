@@ -19,7 +19,7 @@ class TCPClient extends NetBase{
   }
 }
 
-TCPClient.prototype.start = function () {
+TCPClient.prototype.connect = function () {
   let self = this;
   let promise = new Promise(function(resolve, reject){
     if (self.socket && self.isRunning === true){
@@ -91,6 +91,127 @@ TCPClient.prototype.start = function () {
 
     });
 
+    self.socket.on('data', (data) => {
+      if (Buffer.isBuffer(data)){
+        logger.debug(self + " server socket " + 
+                     self.socket._strRemote + " emit data.");
+        // 是否需要增加缓冲区
+        let cpLen = 0;
+        let tmpBuffer = null;
+        while (self.socket._rcvBf.length < RCV_BUFFER_LEN_MAX && 
+               self.socket._rcvBf.length < (data.length+self.socket._rcvBfDtLen)){
+          tmpBuffer = Buffer.from(self.socket._rcvBf);
+          self.socket._rcvBfLen += RCV_BUFFER_LEN;
+          self.socket._rcvBf = Buffer.alloc(self.socket._rcvBfLen, 0);
+          cpLen = tmpBuffer.copy(self.socket._rcvBf, 0, 0, tmpBuffer.length);
+          if (cpLen === tmpBuffer.length){
+            logger.debug(self + " server socket " + self.socket._strRemote + 
+                        " alloc more socket._rcvBfLen:" + self.socket._rcvBfLen);
+          }
+          else{
+            let tips = self + " server socket " + self.socket._strRemote +
+                         " alloc more recv buff copy failed, would close it.";
+            logger.error(tips);
+            self.socket.destroy(tips);
+            return;
+          }
+        }
+        if (self.socket._rcvBf.length >= RCV_BUFFER_LEN_MAX){
+          let tips = self + " server socket " + self.socket._strRemote +
+                       " rcv buffer len is too long:" +
+                       self.socket._rcvBf.length + ", escape its data of req";
+          logger.error(tips);
+          self.socket.destroy(tips);
+          self.socket._rcvBfDtLen = 0; // 一旦长度非法,缓冲数据清空
+          return;
+        }
+
+        // 新数据转入缓冲区, 假设下面 copy 总是成功
+        cpLen = data.copy(self.socket._rcvBf, self.socket._rcvBfDtLen, 0, data.length);
+        if (cpLen !== data.length){
+          let tips = self + " server socket " + self.socket._strRemote +
+                       " data buff copy failed, would close it.";
+          logger.error(tips);
+          self.socket.destroy(tips);
+          return;
+        }
+        self.socket._rcvBfDtLen += data.length;
+
+        if(self.socket._rcvBfDtLen < 4){ // 此时才可以解析出头四个字节---包长信息
+          logger.warn(self + " server socket " + self.socket._strRemote +
+                      " buffer data len:" + self.socket._rcvBf.length +
+                      ", it is too short:" + self.socket._rcvBfDtLen + 
+                      ", continue recv..." );
+          return;
+        }
+
+        // 此时才可以解析出头四个字节---包长信息
+        let msgLen = self.socket._rcvBf.readUInt32LE(0);
+        if ( msgLen > self.socket._rcvBfDtLen ){ // 不够一个完整包
+          if (msgLen > MAX_MSG_LEN){
+            logger.warn(self + " server socket " + self.socket._strRemote + 
+                        ", message len:" + msgLen + " too long than " +
+                        MAX_MSG_LEN + ", would close socket...");
+            self.socket.destroy("Message too long, would close server");
+            return;
+          }
+          else{
+            logger.warn(self + " server socket " + self.socket._strRemote + 
+                        " buffer data len:" + self.socket._rcvBfDtLen + 
+                        ", message len:" + msgLen + ",continue recv...");
+            return;
+          }
+        }
+        // 能够解析包了， 但有可能有多
+        let msgInfo = tools.parseMessageData(self.socket._rcvBf, self.socket._rcvBfDtLen); 
+        if (msgInfo === null){
+          self.socket.destroy("The server socket " + self.socket._strRemote +  
+                         " sent len illegal data, so closed it.");
+          logger.error("The server socket " + self.socket._strRemote +  
+                         " sent data message head " + 
+                         "len illegal, so closed it.");
+          self.socket._rcvBf = null;
+          self.socket.destroy("The server send data message illegal.");
+          return;
+        }
+
+        if (msgInfo.restLen > 0){
+          self.socket._rcvBfDtLen = msgInfo.restLen;
+          // 数据移动已经在 parseMessageData(...) 中完成
+        }
+        else{
+          self.socket._rcvBfDtLen = 0;
+        }
+
+        // 某些情况下需要同步处理(如后继包对前面某个包业务强依赖，
+        // 但这几个包一次网络event到到服务端应用层---客户端未做等待返回后再请求)，暂时异步处理
+        if ( msgInfo && Array.isArray(msgInfo.messages) ){
+          let packet = null;
+          msgInfo.messages.forEach(function(msg){
+            if ( msg && typeof self.handler === 'function' ) {
+              self.handler(msg,function(err, outputData){
+                if (err){
+                  //if (self.option.response){
+                    self.sendData("node-net-xxx process data error:" + err);
+                  //}
+                }
+                else{
+                  //if (self.option.response){
+                    self.sendData(outputData);
+                  //}
+                }
+              });
+            }
+          });
+        }
+      }
+      else if (typeof data === 'string'){
+        logger.warn("String data, would surpported...");
+      }
+      else{
+        logger.warn("Unsported data typeof: " + (typeof data));
+      }
+    });
   });
   return promise;
 
@@ -109,16 +230,15 @@ TCPClient.prototype.sendData = function (data, timeout) {
   else{
     strData = JSON.stringify(data);
   }
+  let btLen = Buffer.byteLength(strData, 'utf8');
 
-  let ttLen = 4 + strData.length;
+  let ttLen = 4 + btLen;
   let dtBf = Buffer.alloc(ttLen, 0);
+  dtBf.writeUInt32LE(ttLen);
+  dtBf.write(strData, 4, btLen, 'utf8');
 
-  let keys = Object.keys(self.clients);
-  let socket = null;
-  keys.forEach(function(k){
-    socket = self.clients[k];
-    self.sendSocketData(socket, dtBf, timeout);
-  });
+  self.sendSocketData(self.socket, dtBf, timeout);
+
 };
 
 // 给一个 socket 发送数据
@@ -126,7 +246,7 @@ const MAX_BUFFER_COPY_TIMES = 100;
 TCPClient.prototype.sendSocketData = function (socket, dtBf, timeout) {
   let self = this;
   if (socket instanceof net.Socket && !socket.destroyed && 
-      Buffer.isBufer(dtBf)){
+      Buffer.isBuffer(dtBf)){
     // 是否初次发送 --- 分配初始化内存
     if ( !socket.hasOwnProperty(socket._sndBfLen) || 
         !Buffer.isBuffer(socket._sndBf) ){
@@ -187,7 +307,7 @@ TCPClient.prototype.sendSocketData = function (socket, dtBf, timeout) {
 TCPClient.prototype._sendSocketBuffer = function (socket, timeout) {
   let self = this;
   if (socket instanceof net.Socket && !socket.destroyed && 
-      Buffer.isBufer(socket._sndBf) && socket._sndBf.length > 0){
+      Buffer.isBuffer(socket._sndBf) && socket._sndBf.length > 0){
     let cpLen = 0;
     let restLen= 0;
     let tmpBuffer = Buffer.alloc(socket._sndBfDtLen, 0);

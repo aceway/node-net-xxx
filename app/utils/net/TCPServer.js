@@ -81,8 +81,29 @@ TCPServer.prototype.start = function () {
         }
       });
 
+      socket.on('drain', () => {
+        logger.debug(self + " client socket " + socket._strRemote +
+                      " drain.");
+        if (socket._sndBfDtLen > 0){
+          self._sendSocketBuffer(socket, 60000);
+        }
+      });
+
+      socket.on('close', (had_error) => {
+        if(had_error){
+          logger.warn(self + " client socket " + socket._strRemote +
+                      " had a transmission error, so closed.");
+        }
+        else{
+          logger.trace(self + " client socket " + socket._strRemote +
+                      " had closed.");
+        }
+        socket._sndBf = null;
+        socket._rcvBf = null;
+        delete self.clients[socket._clientId];
+      });
+
       socket.on('data', (data) => {
-        //if (data instanceof Buffer){
         if (Buffer.isBuffer(data)){
           logger.debug(self + " client socket " + 
                        socket._strRemote + " emit data.");
@@ -203,26 +224,6 @@ TCPServer.prototype.start = function () {
           logger.warn("Unsported data typeof: " + (typeof data));
         }
       });
-      socket.on('drain', () => {
-        logger.debug(self + " client socket " + socket._strRemote +
-                      " drain.");
-        if (socket._sndBfDtLen > 0){
-          self._sendSocketBuffer(socket, 60000);
-        }
-      });
-      socket.on('close', (had_error) => {
-        if(had_error){
-          logger.warn(self + " client socket " + socket._strRemote +
-                      " had a transmission error, so closed.");
-        }
-        else{
-          logger.trace(self + " client socket " + socket._strRemote +
-                      " had closed.");
-        }
-        socket._sndBf = null;
-        socket._rcvBf = null;
-        delete self.clients[socket._clientId];
-      });
     });
 
     self.tcpServer.listen(self.option);
@@ -243,9 +244,12 @@ TCPServer.prototype.sendData = function (data, timeout) {
   else{
     strData = JSON.stringify(data);
   }
+  let btLen = Buffer.byteLength(strData, 'utf8');
 
-  let ttLen = 4 + strData.length;
-  let dtBf = Buffer.alloc(ttLen, 0);
+  let ttLen = 4 + btLen;
+  let dtBf  = Buffer.alloc(ttLen, 0);
+  dtBf.writeUInt32LE(ttLen);
+  dtBf.write(strData, 4, btLen, 'utf8');
 
   let keys = Object.keys(self.clients);
   let socket = null;
@@ -260,7 +264,7 @@ const MAX_BUFFER_COPY_TIMES = 100;
 TCPServer.prototype.sendSocketData = function (socket, dtBf, timeout) {
   let self = this;
   if (socket instanceof net.Socket && !socket.destroyed && 
-      Buffer.isBufer(dtBf)){
+      Buffer.isBuffer(dtBf)){
     // 是否初次发送 --- 分配初始化内存
     if ( !socket.hasOwnProperty(socket._sndBfLen) || 
         !Buffer.isBuffer(socket._sndBf) ){
@@ -321,7 +325,7 @@ TCPServer.prototype.sendSocketData = function (socket, dtBf, timeout) {
 TCPServer.prototype._sendSocketBuffer = function (socket, timeout) {
   let self = this;
   if (socket instanceof net.Socket && !socket.destroyed && 
-      Buffer.isBufer(socket._sndBf) && socket._sndBf.length > 0){
+      Buffer.isBuffer(socket._sndBf) && socket._sndBf.length > 0){
     let cpLen = 0;
     let restLen= 0;
     let tmpBuffer = Buffer.alloc(socket._sndBfDtLen, 0);

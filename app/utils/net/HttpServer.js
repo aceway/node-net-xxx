@@ -73,7 +73,7 @@ HttpServer.prototype.start = function () {
 	  				else{
 	  					if (['inputter','monitor'].indexOf(self.option.part_type) >= 0 &&
                   self.option.response){
-                logger.debug('xxxxxxxxxxxxxxx' + JSON.stringify(self.option));
+                //logger.debug('xxxxxxxxxxxxxxx' + JSON.stringify(self.option));
 	  						res.writeHead(200, {'Content-Type': 'text/json'});
 	  						if (typeof outputData === 'string' && outputData.length > 0){
 	  							res.write(outputData);
