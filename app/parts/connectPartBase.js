@@ -15,29 +15,29 @@ ConnectPartBase.prototype.connect = function () {
            "would implement schema:" + self.part_cfg.schema);
   };
 
-  let promiss = null;
+  let promise = null;
 	switch(self.schema){
 	case 'http':
-    promiss = self.connectHttp();
+    promise = self.connectHttp();
 		break;
 	case 'ws':
-    promiss = self.connectWs();
+    promise = self.connectWs();
 		break;
 	case 'tcp':
-    //promiss = self.connectTcp();
-    promiss = new Promise(prr);
+    //promise = self.connectTcp();
+    promise = new Promise(prr);
 		break;
 	case 'https':
-    promiss = new Promise(prr);
+    promise = new Promise(prr);
 		break;
 	case 'wss':
-    promiss = new Promise(prr);
+    promise = new Promise(prr);
 		break;
 	default:
-    promiss = new Promise(prr);
+    promise = new Promise(prr);
 		break;
 	}
-  return promiss;
+  return promise;
 };
 
 ConnectPartBase.prototype.connectHttp = function () {

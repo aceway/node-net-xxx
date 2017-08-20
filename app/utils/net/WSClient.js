@@ -14,7 +14,7 @@ class WSClient extends NetBase{
 
 WSClient.prototype.connect = function () {
   let self = this;
-  let promiss = new Promise(function(resolve, reject){
+  let promise = new Promise(function(resolve, reject){
     if (self.wsClient && self.isRunning === true){
       return resolve("OK");
     }
@@ -72,7 +72,7 @@ WSClient.prototype.connect = function () {
       }
     });
   });
-  return promiss;
+  return promise;
 };
 
 WSClient.prototype.sendData = function (data, timeout) {

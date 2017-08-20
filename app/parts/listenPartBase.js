@@ -15,28 +15,28 @@ ListenPartBase.prototype.start = function () {
            "would implement schema:" + self.schema);
   };
 
-  let promiss = null;
+  let promise = null;
 	switch(self.schema){
 	case 'http':
-    promiss = self.startHttpListen();
+    promise = self.startHttpListen();
 		break;
 	case 'ws':
-    promiss = self.startWsListen();
+    promise = self.startWsListen();
 		break;
 	case 'tcp':
-    promiss = self.startTcpListen();
+    promise = self.startTcpListen();
 		break;
 	case 'https':
-    promiss = new Promise(prr);
+    promise = new Promise(prr);
 		break;
 	case 'wss':
-    promiss = new Promise(prr);
+    promise = new Promise(prr);
 		break;
 	default:
-    promiss = new Promise(prr);
+    promise = new Promise(prr);
 		break;
 	}
-  return promiss;
+  return promise;
 };
 
 ListenPartBase.prototype.startHttpListen = function () {

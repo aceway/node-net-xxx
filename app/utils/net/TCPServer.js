@@ -23,7 +23,7 @@ class TCPServer extends NetBase{
 
 TCPServer.prototype.start = function () {
   let self = this;
-  let promiss = new Promise(function(resolve, reject){
+  let promise = new Promise(function(resolve, reject){
     if (self.tcpServer && self.isRunning === true){
       return resolve("OK");
     }
@@ -219,13 +219,15 @@ TCPServer.prototype.start = function () {
           logger.trace(self + " client socket " + socket._strRemote +
                       " had closed.");
         }
+        socket._sndBf = null;
+        socket._rcvBf = null;
         delete self.clients[socket._clientId];
       });
     });
 
     self.tcpServer.listen(self.option);
   });
-  return promiss;
+  return promise;
 };
 
 // 优先将 socket 发送缓冲区中的数据发送出去

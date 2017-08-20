@@ -15,7 +15,7 @@ class WSServer extends NetBase{
 
 WSServer.prototype.start = function () {
   let self = this;
-  let promiss = new Promise(function(resolve, reject){
+  let promise = new Promise(function(resolve, reject){
     if (self.wsServer && self.isRunning === true){
       return resolve("OK");
     }
@@ -80,7 +80,7 @@ WSServer.prototype.start = function () {
       });
     });
   });
-  return promiss;
+  return promise;
 };
 
 WSServer.prototype.sendData = function (data, timeout) {

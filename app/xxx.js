@@ -81,7 +81,7 @@ XXX.prototype.start = function(){
 XXX.prototype.startListen4Parts = function(partType, any_all){
   let self = this;
   logger.trace("startListen4Parts(" + partType + ", " + any_all + ")");
-  let promiss = new Promise((resolve, reject) => {
+  let promise = new Promise((resolve, reject) => {
     let ok_cnt = 0;
     let ptCfgs = self.binder.cfg.parts[partType];
     let recursePromiss = function(idx){
@@ -136,14 +136,14 @@ XXX.prototype.startListen4Parts = function(partType, any_all){
     };
     recursePromiss(0);
   });
-  return promiss;
+  return promise;
 };
 
 // 启动主动去连接类型的部件
 XXX.prototype.startConnect4Parts = function(partType, any_all){
   let self = this;
   logger.trace("startConnect4Parts(" + partType + ", " + any_all + ")");
-  let promiss = new Promise((resolve, reject) => {
+  let promise = new Promise((resolve, reject) => {
     let ok_cnt = 0;
     let ptCfgs = self.binder.cfg.parts[partType];
     let recursePromiss = function(idx){
@@ -198,7 +198,7 @@ XXX.prototype.startConnect4Parts = function(partType, any_all){
     };
     recursePromiss(0);
   });
-  return promiss;
+  return promise;
 };
 
 // 启动一个监听部件
@@ -240,16 +240,16 @@ XXX.prototype.startOneListenPart = function(partType, partCfg) {
                   partType);
     break; 
   }
-  let promiss = null;
+  let promise = null;
   if (partObj instanceof PartBase){
-    promiss = partObj.start();
+    promise = partObj.start();
   }
   else{
-    promiss = new Promise((resolve, reject) => {
+    promise = new Promise((resolve, reject) => {
       reject("Unsurpported partType: " + partType);
     });
   }
-  return promiss;
+  return promise;
 };
 
 // 启动一个主动连接部件
@@ -273,16 +273,16 @@ XXX.prototype.startOneConnectPart = function(partType, partCfg) {
                   partType);
     break; 
   }
-  let promiss = null;
+  let promise = null;
   if (partObj instanceof PartBase){
-    promiss = partObj.connect();
+    promise = partObj.connect();
   }
   else{
-    promiss = new Promise((resolve, reject) => {
+    promise = new Promise((resolve, reject) => {
       reject("Unsurpported partType: " + partType);
     });
   }
-  return promiss;
+  return promise;
 };
 
 module.exports = XXX;

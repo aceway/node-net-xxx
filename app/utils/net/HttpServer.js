@@ -17,7 +17,7 @@ class HttpServer extends NetBase  {
 
 HttpServer.prototype.start = function () {
   let self = this;
-  let promiss = new Promise(function(resolve, reject){
+  let promise = new Promise(function(resolve, reject){
     if (self.httpServer && self.isRunning === true){
       return resolve("OK");
     }
@@ -138,7 +138,7 @@ HttpServer.prototype.start = function () {
 
     self.httpServer.listen(self.option);
   });
-  return promiss;
+  return promise;
 };
 
 HttpServer.prototype.sendData = function (data, timeout, path, method) {

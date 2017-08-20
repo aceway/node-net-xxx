@@ -19,7 +19,7 @@ HttpClient.prototype.connect = function () {
 
 HttpClient.prototype.sendData = function (data, timeout, path, method) {
   let self = this;
-  let promiss = new Promise((resolve, reject) => {
+  let promise = new Promise((resolve, reject) => {
 		let commitData = null;
     if (typeof data === 'string'){
 		  commitData = data;
@@ -107,7 +107,7 @@ HttpClient.prototype.sendData = function (data, timeout, path, method) {
     req.write(commitData);
     req.end();
   });
-  return promiss;
+  return promise;
 };
 
 module.exports = HttpClient;
