@@ -152,7 +152,7 @@ PartManager.prototype.sendData2Part = function(ptId, data){
 // 给一种 schema 的器件对端发送数据
 // schema: http, ws, tcp....
 PartManager.prototype.sendData2Schema = function(schema, data){
-  logger.trace("sendData2Schema(" + schema + ", ...");
+  logger.trace("sendData2Schema(" + schema + ", ...)");
   if (this.schema[schema]){
     let sent = false;
     let keys = Object.keys(this.schema[schema]);
@@ -177,7 +177,7 @@ PartManager.prototype.sendData2Schema = function(schema, data){
 // 给一种 part_type 的器件对端发送数据
 // part_type: monitor, inputter, listen_outputter, connect_outputter
 PartManager.prototype.sendData2PartType = function(ptType, data){
-  logger.trace("sendData2PartType(" + ptType + ", ...");
+  logger.trace("sendData2PartType(" + ptType + ", ...)");
   if (this.part_type[ptType]){
     let sent = false;
     let keys = Object.keys(this.part_type[ptType]);
@@ -201,7 +201,7 @@ PartManager.prototype.sendData2PartType = function(ptType, data){
 
 // 给所有 monitor 器件对端发送数据
 PartManager.prototype.sendData2AllMonitor = function(data){
-  logger.trace("sendData2AllMonitor(...");
+  logger.trace("sendData2AllMonitor(...)");
   return this.sendData2PartType('monitor', data);
 };
 
@@ -213,7 +213,7 @@ PartManager.prototype.sendData2AllMonitor = function(data){
 
 // 给所有输出 outputter (xxxx_outputter)器件对端发送数据
 PartManager.prototype.sendData2AllOutputter = function(data){
-  logger.trace("sendData2AllOutputter(...");
+  logger.trace("sendData2AllOutputter(...)");
   let sent = false;
   let keys = Object.keys(this.part_type);
   let ptType = null;
@@ -232,7 +232,7 @@ PartManager.prototype.sendData2AllOutputter = function(data){
 
 // 给所有器件对端发送数据
 PartManager.prototype.sendData2All = function(data){
-  logger.trace("sendData2All(...");
+  logger.trace("sendData2All(...)");
   let sent = false;
   let keys = Object.keys(this.container);
   let id = null;

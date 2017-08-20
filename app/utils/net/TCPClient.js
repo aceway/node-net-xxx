@@ -189,16 +189,44 @@ TCPClient.prototype.connect = function () {
           let packet = null;
           msgInfo.messages.forEach(function(msg){
             if ( msg && typeof self.handler === 'function' ) {
-              self.handler(msg,function(err, outputData){
+              let strMsg = null;
+              if (typeof msg === 'string'){
+                //logger.debug("Get string msg len:" + msg.length);
+                strMsg = msg;
+              }
+              else if( Buffer.isBuffer(msg) ){
+                //logger.debug("Get buff msg len:" + msg.length);
+                strMsg = msg.toString('utf8');
+              }
+              else{
+                logger.error("Unsported tcp msg type: " + typeof msg);
+                return;
+              }
+              //logger.debug("Get tcp msg: " + strMsg);
+
+              let jsonMsg = null;
+              try{
+                jsonMsg = JSON.parse(strMsg);
+              }
+              catch(e){
+                logger.error("JSON.parse("+strMsg+") exception: " + e);
+                return;
+              }
+              if (!jsonMsg){
+                logger.error("JSON.parse("+strMsg+") return null: " + jsonMsg);
+                return;
+              }
+
+              self.handler(jsonMsg,function(err, outputData){
                 if (err){
-                  //if (self.option.response){
+                  if (self.option.response){
                     self.sendData("node-net-xxx process data error:" + err);
-                  //}
+                  }
                 }
                 else{
-                  //if (self.option.response){
+                  if (self.option.response){
                     self.sendData(outputData);
-                  //}
+                  }
                 }
               });
             }
@@ -237,6 +265,7 @@ TCPClient.prototype.sendData = function (data, timeout) {
   dtBf.writeUInt32LE(ttLen);
   dtBf.write(strData, 4, btLen, 'utf8');
 
+  //logger.debug(self + " TCPClient.sendData len:" + dtBf.length);
   self.sendSocketData(self.socket, dtBf, timeout);
 
 };
@@ -245,6 +274,7 @@ TCPClient.prototype.sendData = function (data, timeout) {
 const MAX_BUFFER_COPY_TIMES = 100;
 TCPClient.prototype.sendSocketData = function (socket, dtBf, timeout) {
   let self = this;
+  //logger.debug(self + " TCPClient.sendSocketData 1 len:" + dtBf.length);
   if (socket instanceof net.Socket && !socket.destroyed && 
       Buffer.isBuffer(dtBf)){
     // 是否初次发送 --- 分配初始化内存
@@ -294,12 +324,14 @@ TCPClient.prototype.sendSocketData = function (socket, dtBf, timeout) {
       socket.destroy(tips);
       return false;
     }
+    socket._sndBfDtLen += cpLen;
 
     // 从缓冲区发送数据,及未发送成功的部分数据转义
+    //logger.debug(self + " TCPClient.sendSocketData 2 len:" + dtBf.length);
     return self._sendSocketBuffer(socket, timeout);
   }
   else{
-    logger.error("TCPClient.sendSocketData parameter error.");
+    logger.error(self + " TCPClient.sendSocketData parameter error.");
     return false;
   }
 };
@@ -312,6 +344,7 @@ TCPClient.prototype._sendSocketBuffer = function (socket, timeout) {
     let restLen= 0;
     let tmpBuffer = Buffer.alloc(socket._sndBfDtLen, 0);
     socket._sndBf.copy(tmpBuffer, 0, 0, socket._sndBfDtLen);
+    //logger.debug(self + " TCP._sendSocketBuffer socket.write len: " + tmpBuffer.length);
     if (true === socket.write(tmpBuffer)){
       restLen = 0;
       socket._sndBfDtLen = 0;
@@ -330,10 +363,11 @@ TCPClient.prototype._sendSocketBuffer = function (socket, timeout) {
       }
       socket._sndBfDtLen = restLen;
     }
+    //logger.debug(self + " TCP._sendSocketBuffer len: " + tmpBuffer.length);
     return true;
   }
   else{
-    logger.error("TCPClient._sendSocketBuffer parameter error.");
+    logger.error(self + " TCPClient._sendSocketBuffer parameter error.");
     return false;
   }
 };

@@ -10,13 +10,13 @@ const config = {
       {schema: "http", host:"192.168.1.99", port: 2000, response: false},
       //{schema: "http", host:"127.0.0.1",    port: 2001},
       {schema: "ws",   host:"127.0.0.1",    port: 2002},
-      //{schema: "tcp",   host:"127.0.0.1",    port: 2003},
+      {schema: "tcp",   host:"127.0.0.1",    port: 2003},
     ],
     // inputter 接收外部数据创建的监听端口,只支持作为服务端 listen 
     "inputter": [
       {schema: "http", host: "127.0.0.1", port: 3000},
       //{schema: "ws",   host: "127.0.0.1", port: 3001},
-      {schema: "tcp",   host: "127.0.0.1", port: 3002, response: true},
+      //{schema: "tcp",   host: "127.0.0.1", port: 3002, response: true},
     ],
     // outputter 输出数据创建的监听端口, 支持作为服务端 listen 
     "listen_outputter": [   // 
@@ -27,7 +27,7 @@ const config = {
     "connect_outputter": [  // 
       //{schema: "http", host: "localhost", port: 5000},
       //{schema: "ws",   host: "localhost", port: 2002},    // 测试,通过配置系统 host 配置成环路
-      {schema: "tcp",   host: "localhost", port: 3002},    // 测试,通过配置系统 host 配置成环路
+      {schema: "tcp",   host: "localhost", port: 2003},    // 测试,通过配置系统 host 配置成环路
       //{schema: "http", host: "host_ip",   port: 2000},  // 测试,配置成环路
       //{schema: "http", host: "localhost", port: 3000},  // 测试,配置成环路
     ]

@@ -201,7 +201,35 @@ TCPServer.prototype.start = function () {
             let packet = null;
             msgInfo.messages.forEach(function(msg){
               if ( msg && typeof self.handler === 'function' ) {
-                self.handler(msg,function(err, outputData){
+                let strMsg = null;
+                if (typeof msg === 'string'){
+                  //logger.debug("Get string msg len:" + msg.length);
+                  strMsg = msg;
+                }
+                else if( Buffer.isBuffer(msg) ){
+                  //logger.debug("Get buff msg len:" + msg.length);
+                  strMsg = msg.toString('utf8');
+                }
+                else{
+                  logger.error("Unsported tcp msg type: " + typeof msg);
+                  return;
+                }
+                //logger.debug("Get tcp msg: " + strMsg);
+
+                let jsonMsg = null;
+                try{
+                  jsonMsg = JSON.parse(strMsg);
+                }
+                catch(e){
+                  logger.error("JSON.parse("+strMsg+") exception: " + e);
+                  return;
+                }
+                if (!jsonMsg){
+                  logger.error("JSON.parse("+strMsg+") return null: " + jsonMsg);
+                  return;
+                }
+
+                self.handler(jsonMsg,function(err, outputData){
                   if (err){
                     if (self.option.response){
                       self.sendData("node-net-xxx process data error:" + err);

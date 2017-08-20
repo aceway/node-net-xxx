@@ -69,7 +69,7 @@ tools.parseMessageData = function(binBuffer, dataLen, maxMsgLen, maxMsgCnt){
     if ( (offset + msgLen) > dataLen ) {
       // 剩余不够，转移数据
       msgDataInfo.restLen = dataLen - offset;
-      let tmpBuff = new Buffer(msgDataInfo.restLen, "binary");
+      let tmpBuff = Buffer.alloc(msgDataInfo.restLen, 0);
       binBuffer.copy( tmpBuff, 0, offset, offset+msgDataInfo.restLen );
       binBuffer.fill(0, 0);
       tmpBuff.copy(binBuffer, 0, 0, msgDataInfo.restLen);
@@ -79,9 +79,9 @@ tools.parseMessageData = function(binBuffer, dataLen, maxMsgLen, maxMsgCnt){
     }
     else {
       // 可以取到一个完整包
-      let msgBuffer = new Buffer(msgLen, "binary");
-      // TODO remove firat uint32
-      binBuffer.copy(msgBuffer, 0, offset, offset+msgLen);
+      let msgBuffer = Buffer.alloc(msgLen-4, 0);
+      // remove first uint32
+      binBuffer.copy(msgBuffer, 0, offset+4, offset+msgLen);
       msgDataInfo.messages.push(msgBuffer);
       offset += msgLen;
       if (offset === dataLen){
