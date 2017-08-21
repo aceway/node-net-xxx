@@ -34,7 +34,7 @@
         "pattern": "[%r]-%m"
       },
       "pattern": "yyyy-MM-dd/hh_debug.log",
-      "filename" :  ".logs/",
+      "filename" :  "./logs/",
       "absolute" : true,
       "alwaysIncludePattern": true
     },

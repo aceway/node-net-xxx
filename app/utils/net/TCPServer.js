@@ -230,16 +230,12 @@ TCPServer.prototype.start = function () {
                 }
 
                 self.handler(jsonMsg,function(err, outputData){
-                  if (err){
-                    if (self.option.response){
-                      self.sendData("node-net-xxx process data error:" + err);
-                    }
-                  }
-                  else{
-                    if (self.option.response){
-                      self.sendData(outputData);
-                    }
-                  }
+                	if (err){
+                	  self.sendSocketData(socket, "{code:-1, desc:'node-net-xxx process data error:" + err + "'}");
+                	}
+                	else{
+                	  self.sendSocketData(socket, outputData);
+                	}
                 });
               }
             });
@@ -259,10 +255,7 @@ TCPServer.prototype.start = function () {
   return promise;
 };
 
-// 优先将 socket 发送缓冲区中的数据发送出去
-// 如果发送缓冲区空 则直接发送本次数据
-// 否则发送后将本次数据追加到 发送缓冲末尾
-// socket 的 drain 事件中也触发发送缓冲区数据
+// 将数据发送给所有连接的客户端
 TCPServer.prototype.sendData = function (data, timeout) {
   let self = this;
   let strData = null;
@@ -283,13 +276,37 @@ TCPServer.prototype.sendData = function (data, timeout) {
   let socket = null;
   keys.forEach(function(k){
     socket = self.clients[k];
-    self.sendSocketData(socket, dtBf, timeout);
+    self.sendSocketBuffer(socket, dtBf, timeout);
   });
 };
 
-// 给一个 socket 发送数据
+// 给一个 socket 发送data
+TCPServer.prototype.sendSocketData = function (socket, data, timeout) {
+  let self = this;
+  let strData = null;
+  if (typeof data === 'string'){
+    strData = data;
+  }
+  else{
+    strData = JSON.stringify(data);
+  }
+  let btLen = Buffer.byteLength(strData, 'utf8');
+
+  let ttLen = 4 + btLen;
+  let dtBf  = Buffer.alloc(ttLen, 0);
+  dtBf.writeUInt32LE(ttLen);
+  dtBf.write(strData, 4, btLen, 'utf8');
+
+  self.sendSocketBuffer(socket, dtBf, timeout);
+};
+
 const MAX_BUFFER_COPY_TIMES = 100;
-TCPServer.prototype.sendSocketData = function (socket, dtBf, timeout) {
+// 给一个 socket 发送buffer (填实了data)
+// 		优先将 socket 发送缓冲区中的数据发送出去
+// 		如果发送缓冲区空 则直接发送本次数据
+// 		否则将本次数据追加到发送缓冲末尾, 然后再发生
+// 		socket 的 drain 事件中也触发发送缓冲区数据
+TCPServer.prototype.sendSocketBuffer = function (socket, dtBf, timeout) {
   let self = this;
   if (socket instanceof net.Socket && !socket.destroyed && 
       Buffer.isBuffer(dtBf)){
@@ -345,7 +362,7 @@ TCPServer.prototype.sendSocketData = function (socket, dtBf, timeout) {
     return self._sendSocketBuffer(socket, timeout);
   }
   else{
-    logger.error("TCPServer.sendSocketData parameter error.");
+    logger.error("TCPServer.sendSocketBuffer parameter error.");
     return false;
   }
 };

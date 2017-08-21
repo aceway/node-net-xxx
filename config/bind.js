@@ -7,7 +7,7 @@ const config = {
   parts: {
     // monitor 监控本 node-net-xxx 状况创建的监听端口, 只支持作为服务端 listen 
     "monitor": [            // 
-      {schema: "http", host:"192.168.1.99", port: 2000, response: false},
+      {schema: "http", host:"127.0.0.1", port: 2000, response: false},
       //{schema: "http", host:"127.0.0.1",    port: 2001},
       {schema: "ws",   host:"127.0.0.1",    port: 2002},
       {schema: "tcp",   host:"127.0.0.1",    port: 2003},

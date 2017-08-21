@@ -65,29 +65,28 @@ HttpServer.prototype.start = function () {
 	  				if (err){
 	  					logger.warn("HttpServer "+ self.full_name +" error: " + err);
 	  					let tips = "Node-net-xxx process data error:" + err;
-	  					logger.error(tips + ',' + outputData);
+	  					logger.error("code:-1, desc:'" + tips + "," + outputData +"'}");
 	  					res.writeHead(500, {'Content-Type': 'text/json'});
 	  					res.write(tips);
 	  					res.end();
 	  				}
 	  				else{
-	  					if (['inputter','monitor'].indexOf(self.option.part_type) >= 0 &&
-                  self.option.response){
+	  					if (['inputter','monitor'].indexOf(self.option.part_type) >= 0){
                 //logger.debug('xxxxxxxxxxxxxxx' + JSON.stringify(self.option));
 	  						res.writeHead(200, {'Content-Type': 'text/json'});
 	  						if (typeof outputData === 'string' && outputData.length > 0){
 	  							res.write(outputData);
 	  						}
-	  						else if (typeof outputData === 'object' ){
+	  						else if (typeof outputData === 'object' && outputData){
                   try{
 	  							  res.write(JSON.stringify(outputData));
                   }
                   catch(e){
-	  							  res.write("Node-net-xxx catch exception: " + e);
+	  							  res.write("{code:-1, desc:'Node-net-xxx catch exception: " + e + "'}");
                   }
 	  						}
 	  						else{
-	  							res.write("{desc: 'Nothing response'}");
+	  							res.write("{code:0, desc: 'Nothing response'}");
 	  						}
 	  						res.end();
 	  					}
@@ -119,7 +118,6 @@ HttpServer.prototype.start = function () {
     });
 
     self.httpServer.on('error', function (e) {
-      // TODO: resolve some error as reject
 	  	let tips = "HTTP error:" + e;
       logger.error(tips);
       if ( !self.isRunning ){

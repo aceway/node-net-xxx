@@ -66,10 +66,10 @@ WSServer.prototype.start = function () {
             if (typeof result !== 'string'){
               result = JSON.stringify(result);
             }
-            if (['inputter', 'monitor'].indexOf(self.option.part_type) >= 0 && 
-                self.option.response){
+            if (['inputter', 'monitor'].indexOf(self.option.part_type) >= 0){
               if (error){
-                ws.send("node-net-xxx process data error: " + error);
+                ws.send("{code:-1, desc:'node-net-xxx process data error: " + 
+											  error + "'}");
               }
               else{
                 ws.send(result);

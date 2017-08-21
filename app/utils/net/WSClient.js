@@ -59,13 +59,12 @@ WSClient.prototype.connect = function () {
           if (typeof result !== 'string'){
             result = JSON.stringify(result);
           }
-          if (['inputter', 'monitor'].indexOf(self.option.schema) >= 0 && 
-              self.option.response){
-            if (error){
-              self.sendData("node-net-xxx process data error: " + error);
+          if (['inputter', 'monitor'].indexOf(self.option.schema) >= 0){
+            if (err){
+              self.sendData("{code:-1, desc:'node-net-xxx process data error:" + err + "'}");
             }
             else{
-              self.sendData(result);
+              self.sendData(outputData);
             }
           }
         });

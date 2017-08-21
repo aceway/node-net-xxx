@@ -4,12 +4,12 @@ const logger = require('../logger.js');
 const tools = require("../tools.js");
 const NetBase= require("./NetBase.js");
 
-const MAX_MSG_LEN             = 1024 * 4; // 允许对端发送的最大包长(字节单位)
-const RCV_BUFFER_LEN     = 1024 * 128;       // 每个接收缓冲区初始化长度
-const RCV_BUFFER_LEN_MAX = 1024 * 1024 * 64; // 每个接收缓冲区最大长度
+const MAX_MSG_LEN        = 1024 * 4; 					// 允许对端发送的最大包长(字节单位)
+const RCV_BUFFER_LEN     = 1024 * 128;       	// 每个接收缓冲区初始化长度
+const RCV_BUFFER_LEN_MAX = 1024 * 1024 * 64; 	// 每个接收缓冲区最大长度
 
 const SND_BUFFER_LEN     = 1024 * 1024;       // 每个发送缓冲区初始化长度
-const SND_BUFFER_LEN_MAX = 1024 * 1024 * 64; // 每个发送缓冲区最大长度
+const SND_BUFFER_LEN_MAX = 1024 * 1024 * 64; 	// 每个发送缓冲区最大长度
 
 class TCPClient extends NetBase{
   constructor(option, handler){
@@ -219,14 +219,10 @@ TCPClient.prototype.connect = function () {
 
               self.handler(jsonMsg,function(err, outputData){
                 if (err){
-                  if (self.option.response){
-                    self.sendData("node-net-xxx process data error:" + err);
-                  }
+                  self.sendData("{code:-1, desc:'node-net-xxx process data error:" + err + "'}");
                 }
                 else{
-                  if (self.option.response){
-                    self.sendData(outputData);
-                  }
+                  self.sendData(outputData);
                 }
               });
             }
@@ -266,15 +262,15 @@ TCPClient.prototype.sendData = function (data, timeout) {
   dtBf.write(strData, 4, btLen, 'utf8');
 
   //logger.debug(self + " TCPClient.sendData len:" + dtBf.length);
-  self.sendSocketData(self.socket, dtBf, timeout);
+  self.sendSocketBuffer(self.socket, dtBf, timeout);
 
 };
 
 // 给一个 socket 发送数据
 const MAX_BUFFER_COPY_TIMES = 100;
-TCPClient.prototype.sendSocketData = function (socket, dtBf, timeout) {
+TCPClient.prototype.sendSocketBuffer = function (socket, dtBf, timeout) {
   let self = this;
-  //logger.debug(self + " TCPClient.sendSocketData 1 len:" + dtBf.length);
+  //logger.debug(self + " TCPClient.sendSocketBuffer 1 len:" + dtBf.length);
   if (socket instanceof net.Socket && !socket.destroyed && 
       Buffer.isBuffer(dtBf)){
     // 是否初次发送 --- 分配初始化内存
@@ -327,11 +323,11 @@ TCPClient.prototype.sendSocketData = function (socket, dtBf, timeout) {
     socket._sndBfDtLen += cpLen;
 
     // 从缓冲区发送数据,及未发送成功的部分数据转义
-    //logger.debug(self + " TCPClient.sendSocketData 2 len:" + dtBf.length);
+    //logger.debug(self + " TCPClient.sendSocketBuffer 2 len:" + dtBf.length);
     return self._sendSocketBuffer(socket, timeout);
   }
   else{
-    logger.error(self + " TCPClient.sendSocketData parameter error.");
+    logger.error(self + " TCPClient.sendSocketBuffer parameter error.");
     return false;
   }
 };
