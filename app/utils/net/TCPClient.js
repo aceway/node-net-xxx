@@ -217,7 +217,8 @@ TCPClient.prototype.connect = function () {
                 return;
               }
 
-              self.handler(jsonMsg,function(err, outputData){
+          		let info = {'data': jsonMsg, 'part': self.full_name, 'from':socket._remote};
+              self.handler(info, function(err, outputData){
                 if (err){
                   self.sendData("{code:-1, desc:'node-net-xxx process data error:" + err + "'}");
                 }
