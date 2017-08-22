@@ -2,7 +2,7 @@
   "replaceConsole": true,
   "allInOne": true,
   "levels":{
-    "[all]":"trace"
+    "[all]":"all"
   },
   "appenders": [
     {

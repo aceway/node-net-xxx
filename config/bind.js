@@ -26,7 +26,7 @@ const config = {
     // outputter 输出主动连接其它端口, 支持作为客户端去 connect 其它服务端口
     "connect_outputter": [  // 
       //{schema: "http", host: "localhost", port: 5000},
-      //{schema: "ws",   host: "localhost", port: 2002},    // 测试,通过配置系统 host 配置成环路
+      {schema: "ws",   host: "localhost", port: 2002},    // 测试,通过配置系统 host 配置成环路
       {schema: "tcp",   host: "localhost", port: 2003},    // 测试,通过配置系统 host 配置成环路
       //{schema: "http", host: "host_ip",   port: 2000},  // 测试,配置成环路
       //{schema: "http", host: "localhost", port: 3000},  // 测试,配置成环路

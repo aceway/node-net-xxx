@@ -217,7 +217,7 @@ TCPClient.prototype.connect = function () {
                 return;
               }
 
-          		let info = {'data': jsonMsg, 'part': self.full_name, 'from':socket._remote};
+          		let info = {'data': jsonMsg, 'part': self.full_name, 'from':self.socket._remote};
               self.handler(info, function(err, outputData){
                 if (err){
                   self.sendData("{code:-1, desc:'node-net-xxx process data error:" + err + "'}");
@@ -268,7 +268,6 @@ TCPClient.prototype.sendData = function (data, timeout) {
 };
 
 // 给一个 socket 发送数据
-const MAX_BUFFER_COPY_TIMES = 100;
 TCPClient.prototype.sendSocketBuffer = function (socket, dtBf, timeout) {
   let self = this;
   //logger.debug(self + " TCPClient.sendSocketBuffer 1 len:" + dtBf.length);

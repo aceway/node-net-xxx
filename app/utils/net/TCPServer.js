@@ -301,7 +301,6 @@ TCPServer.prototype.sendSocketData = function (socket, data, timeout) {
   self.sendSocketBuffer(socket, dtBf, timeout);
 };
 
-const MAX_BUFFER_COPY_TIMES = 100;
 // 给一个 socket 发送buffer (填实了data)
 // 		优先将 socket 发送缓冲区中的数据发送出去
 // 		如果发送缓冲区空 则直接发送本次数据
